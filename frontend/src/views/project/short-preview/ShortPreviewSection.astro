@@ -1,0 +1,126 @@
+---
+import { TextEffectLine } from "../../../components";
+
+interface VideoItem {
+  src: string;
+  poster: string;
+}
+
+interface Props {
+  listVideo?: VideoItem[];
+}
+
+const { listVideo = [] } = Astro.props;
+---
+
+<section
+  class="relative w-full flex flex-col gap-12 lg:gap-0 lg:flex-row lg:justify-between p-4 sm:p-16"
+>
+  <div class="lg:sticky lg:top-16 h-fit">
+    <h1
+      class="font-accent italic text-[clamp(42px,6vw+1rem,100px)] text-main leading-[75%]"
+    >
+      <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
+    </h1>
+    <h1
+      class="text-[clamp(42px,6vw+1rem,100px)] font-bold uppercase text-main leading-[75%]"
+    >
+      <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
+    </h1>
+  </div>
+  <div class="flex flex-col gap-1">
+    {
+      listVideo.map((video) => (
+        <video
+          autoplay
+          muted
+          loop
+          playsinline
+          poster={video.poster}
+          class="video-blur w-full aspect-video max-w-200 object-cover"
+        >
+          <source src={video.src} type="video/mp4" />
+        </video>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  p {
+    font-size: 18px;
+    line-height: 95%;
+  }
+
+  .video-blur {
+    filter: blur(1px) grayscale(1) brightness(0.5);
+    transition: filter 0.3s ease-out;
+    will-change: filter;
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const initVideoBlur = () => {
+    const videos = document.querySelectorAll(".video-blur");
+
+    videos.forEach((video) => {
+      gsap.to(video, {
+        filter: "blur(0px)",
+        scrollTrigger: {
+          trigger: video,
+          start: "top 90%",
+          end: "top 20%",
+          scrub: true,
+          // markers: true,
+        },
+      });
+
+      gsap.to(video, {
+        filter: "blur(10px)",
+        scrollTrigger: {
+          trigger: video,
+          start: "bottom 20%",
+          end: "bottom 0%",
+          scrub: true,
+        },
+      });
+    });
+
+    let proxy = { skew: 0 },
+      skewSetter = gsap.quickSetter(".video-blur", "skewY", "deg"),
+      clamp = gsap.utils.clamp(-2, 2);
+
+    ScrollTrigger.create({
+      onUpdate: (self) => {
+        let skew = clamp(self.getVelocity() / -1000);
+
+        if (Math.abs(skew) > Math.abs(proxy.skew)) {
+          proxy.skew = skew;
+          gsap.to(proxy, {
+            skew: 0,
+            duration: 0.8,
+            ease: "power3",
+            overwrite: true,
+            onUpdate: () => skewSetter(proxy.skew),
+          });
+        }
+      },
+    });
+
+    ScrollTrigger.refresh();
+  };
+
+  window.addEventListener("load", initVideoBlur);
+  document.addEventListener("astro:page-load", initVideoBlur);
+</script>

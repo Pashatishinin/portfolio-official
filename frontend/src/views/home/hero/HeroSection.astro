@@ -1,0 +1,90 @@
+---
+import { Circle, TextEffect } from "../../../components";
+---
+
+<section id="hero" class="relative z-10 h-full max-h-250 min-h-100vh w-full">
+  <div class="back fixed top-0 left-0 bg-main h-screen w-screen z-20"></div>
+
+  <div
+    class="px-4 sm:px-16 py-16 sm:py-32 flex flex-col justify-between h-full text-background"
+  >
+    <div>
+      <h1
+        class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,150px)] leading-[75%]"
+      >
+        <TextEffect delay={0.2} wait>Creative </TextEffect>
+      </h1>
+      <h1
+        class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,150px)] leading-[75%]"
+      >
+        <TextEffect delay={0.2} wait>Technologist </TextEffect>
+      </h1>
+    </div>
+
+    <div>
+      <h1
+        class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,150px)] leading-[75%]"
+      >
+        <TextEffect delay={0.2} wait>Pavlo</TextEffect>
+      </h1>
+      <h1
+        class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,150px)] leading-[75%]"
+      >
+        <TextEffect delay={0.2} wait>Tishynin</TextEffect>
+      </h1>
+    </div>
+  </div>
+  <div
+    class="moveCircle absolute bottom-[50%] sm:bottom-[15%] right-[50%] sm:right-[15%] translate-1/2 sm:translate-0"
+  >
+    <Circle />
+  </div>
+</section>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const initHero = () => {
+    const oldTrigger = ScrollTrigger.getById("hero-scroll");
+    if (oldTrigger) oldTrigger.kill();
+
+    gsap.to(".back", {
+      yPercent: -150,
+      skewY: -15,
+      duration: 1.2,
+      ease: "expo.inOut",
+      delay: 0.1,
+    });
+
+    // Анимация круга
+    let mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        isDesktop: "(min-width: 640px)",
+        isMobile: "(max-width: 639px)",
+      },
+      (context) => {
+        let { isDesktop, isMobile }: any = context.conditions;
+
+        gsap.to(".moveCircle", {
+          y: isMobile ? 500 : 200,
+          scrollTrigger: {
+            id: "hero-scroll",
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.5,
+          },
+        });
+      },
+    );
+
+    ScrollTrigger.refresh();
+  };
+
+  document.addEventListener("astro:page-load", initHero);
+</script>

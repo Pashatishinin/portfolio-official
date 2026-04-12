@@ -1,0 +1,61 @@
+---
+import { TextEffect, TextEffectLine } from "../../components";
+import SocialLink from "../../components/ui/buttons/SocialLink.astro";
+import FooterCta from "./ui/FooterCta.astro";
+import FooterSocials from "./ui/FooterSocials.astro";
+---
+
+<section
+  id="footer"
+  class="text-white w-full h-125 py-8 px-4 sm:p-16 flex flex-col justify-end relative"
+>
+  <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-10 sm:gap-0">
+    <FooterCta />
+
+    <FooterSocials />
+  </div>
+</section>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const initFooterAnimation = () => {
+    const fluid = (window as any).fluidBackground;
+
+    if (fluid?.displayMaterial?.uniforms) {
+      const uniforms = fluid.displayMaterial.uniforms;
+
+      const colors = [
+        uniforms.uColor1.value,
+        uniforms.uColor2.value,
+        uniforms.uColor3.value,
+        uniforms.uColor4.value,
+      ];
+
+      gsap.to(colors, {
+        r: 0.078,
+        g: 0.075,
+        b: 0.078,
+        scrollTrigger: {
+          trigger: "#footer",
+          start: "top bottom-=200px",
+
+          end: "top bottom-=700px",
+          scrub: 1,
+          // markers: true,
+        },
+      });
+    }
+  };
+
+  // Поддержка Astro View Transitions и обычной загрузки
+  document.addEventListener("astro:page-load", initFooterAnimation);
+  // На случай если View Transitions не используются:
+  if (!(window as any).astroPageLoadBound) {
+    window.addEventListener("load", initFooterAnimation);
+    (window as any).astroPageLoadBound = true;
+  }
+</script>

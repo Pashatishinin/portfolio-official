@@ -1,0 +1,48 @@
+---
+import TextEffectLine from "../../animation/TextEffectLine.astro";
+const { text, href = "#", class: className } = Astro.props;
+---
+
+<a class="flex items-center" href={href} target="_blank">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    ><path
+      fill="currentColor"
+      d="m14 21l-1.425-1.425l3.6-3.575H5V4h2v10h9.175l-3.6-3.6l1.4-1.425L20 15z"
+    ></path></svg
+  ><TextEffectLine>{text}</TextEffectLine>
+</a>
+
+<style>
+  a {
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 0;
+  }
+  a svg {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.5);
+    transition:
+      opacity 0.4s ease,
+      transform 0.4s cubic-bezier(0.19, 1, 0.22, 1),
+      margin 0.4s ease;
+    margin-right: 0;
+    width: 24px;
+  }
+
+  a:hover {
+    transform: translateX(10px);
+  }
+
+  a:hover svg {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    margin-right: 12px;
+  }
+</style>

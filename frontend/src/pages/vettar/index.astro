@@ -1,0 +1,37 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import FooterSection from "../../views/footer/FooterSection.astro";
+import HeaderSectionProject from "../../views/header/HeaderSectionProject.astro";
+import {
+  AboutProjectSection,
+  HeroSection,
+  NextProjectSection,
+  ShortPreviewSection,
+} from "../../views/project";
+
+import mainImg from "../../assets/vettar/main.jpg";
+
+import video1 from "../../assets/vettar/1.mp4";
+import video2 from "../../assets/vettar/2.mp4";
+import video3 from "../../assets/vettar/3.mp4";
+import video4 from "../../assets/vettar/4.mp4";
+
+const videos = [
+  { src: video1, poster: "/1.jpg" },
+  { src: video2, poster: "/1.jpg" },
+  { src: video3, poster: "/1.jpg" },
+  { src: video4, poster: "/1.jpg" },
+];
+
+const role = ["Design", "Frontend Development", "CMS Architecture"];
+const tools = ["Next.js", "CMS Sanity", "Tailwind CSS", "GSAP", "Figma"];
+---
+
+<Layout>
+  <HeaderSectionProject />
+  <HeroSection text="Vettar" img={mainImg} />
+  <AboutProjectSection role={role} tools={tools} year="2025" />
+  <ShortPreviewSection listVideo={videos} />
+  <NextProjectSection link="/8enjamin" />
+  <FooterSection />
+</Layout>

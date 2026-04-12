@@ -1,0 +1,29 @@
+---
+interface Props {
+  award: string;
+  result: string;
+  year?: string;
+}
+
+const { award, result, year } = Astro.props;
+---
+
+<div
+  class="achievement-row grid grid-cols-2 sm:grid-cols-3 py-2 sm:py-4 lg:py-8 border-b border-main/10 items-start sm:items-center hover:bg-main/5 transition-colors group gap-y-2 gap-x-4 sm:gap-0"
+>
+  <p
+    class="col-span-2 sm:col-span-1 text-left sm:text-right font-mono text-sm opacity-50 sm:opacity-100 order-1 sm:order-3"
+  >
+    {year}
+  </p>
+
+  <p class="font-bold uppercase tracking-tight text-lg order-2 sm:order-1">
+    {award}
+  </p>
+
+  <p
+    class="text-right sm:text-center text-lg opacity-70 group-hover:opacity-100 transition-opacity order-3 sm:order-2"
+  >
+    {result}
+  </p>
+</div>

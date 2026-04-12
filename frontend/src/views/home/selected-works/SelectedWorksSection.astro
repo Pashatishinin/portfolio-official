@@ -1,0 +1,25 @@
+---
+import { TextEffectLine } from "../../../components";
+import WorkList from "./ui/WorkList.astro";
+---
+
+<section id="works" class="relative flex flex-col w-full">
+  <div class="p-4 sm:p-16">
+    <div>
+      <h2
+        class="font-accent text-left font-black -tracking-widest text-[#1d1d1d] text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
+      >
+        <TextEffectLine align="left" blockColor="#242424"
+          >Selected</TextEffectLine
+        >
+      </h2>
+      <h2
+        class="text-left font-black -tracking-widest text-[#1d1d1d] text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
+      >
+        <TextEffectLine align="left" blockColor="#242424">Works</TextEffectLine>
+      </h2>
+    </div>
+  </div>
+
+  <WorkList />
+</section>

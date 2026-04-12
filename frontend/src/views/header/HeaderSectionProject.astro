@@ -1,0 +1,26 @@
+---
+import { Loop } from "three/src/nodes/utils/LoopNode.js";
+import Logo from "../../components/ui/buttons/Logo.astro";
+import Link from "../../components/ui/buttons/Link.astro";
+import CtaButton from "../../components/ui/buttons/CtaButton.astro";
+---
+
+<section
+  class="header fixed z-999 flex w-screen justify-between px-4 sm:px-16 py-8"
+>
+  <Logo />
+</section>
+
+<style>
+  .header {
+    mix-blend-mode: difference;
+    color: white;
+  }
+  .italic {
+    font-family: "Satoshi-Italica";
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+</script>

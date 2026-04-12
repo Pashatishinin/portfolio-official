@@ -1,0 +1,47 @@
+---
+import { TextEffectLine } from "../../../components";
+
+interface Props {
+  role?: string[];
+  tools?: string[];
+  year?: string;
+}
+
+const { role = [], tools = [], year } = Astro.props;
+---
+
+<section
+  class="px-4 sm:px-16 py-8 grid gap-4 sm:gap-0 grid-cols-1 sm:grid-cols-3"
+>
+  <div class="flex flex-col">
+    <h1 class="text-sm">Role</h1><div>
+      {
+        role.map((item) => (
+          <p>
+            <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
+          </p>
+        ))
+      }
+    </div>
+  </div>
+  <div class="flex flex-col items-start sm:items-center">
+    <h1 class="text-sm">Tools</h1><div
+      class="flex flex-col sm:flex-wrap justify-start sm:justify-center"
+    >
+      {
+        tools.map((item) => (
+          <p class="mx-0 sm:mx-2">
+            <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
+          </p>
+        ))
+      }
+    </div>
+  </div>
+  <div class="flex flex-col items-start sm:items-end">
+    <h1 class="text-sm">Year</h1><div class="flex flex-wrap">
+      <p>
+        <TextEffectLine blockColor="#1d1d1d">{year}</TextEffectLine>
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,99 @@
+---
+import { TextEffectLine, CtaButton } from "../../../../components";
+
+interface Props {
+  title: string;
+  link: string;
+  videoSrc?: string;
+  imgSrc?: string;
+  poster?: string;
+}
+
+const { title, link, videoSrc, imgSrc, poster } = Astro.props;
+---
+
+<section class="work-item">
+  <div class="work-item-img">
+    {
+      videoSrc ? (
+        <video autoplay muted loop playsinline poster={poster}>
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      ) : (
+        <img src={imgSrc} alt={title} loading="lazy" />
+      )
+    }
+  </div>
+
+  <div class="work-item-content">
+    <div class="work-item-name">
+      <h1
+        class="font-main uppercase text-center text-[2.5rem] md:text-[5rem] font-semibold leading-none text-white"
+      >
+        <TextEffectLine
+          title
+          align="center"
+          blockColor="var(--color-secondary)"
+        >
+          {title}
+        </TextEffectLine>
+      </h1>
+    </div>
+
+    <div class="work-item-link">
+      <CtaButton link={link} text="View Project" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .work-item {
+    position: relative;
+    /* width: 100vw; */
+    height: 110svh;
+    overflow: hidden;
+  }
+
+  .work-item-img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(25% 25%, 75% 40%, 100% 100%, 0% 100%);
+    will-change: clip-path;
+  }
+
+  video,
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .work-item-name {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    z-index: 1;
+  }
+
+  .work-item-link {
+    position: absolute;
+    text-align: center;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+  .work-item-name h1 {
+    color: #fff;
+  }
+
+  @media (max-width: 1000px) {
+    h1,
+    .work-item-name h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>

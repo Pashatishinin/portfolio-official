@@ -1,0 +1,101 @@
+<script>
+  import Lenis from "lenis";
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { Draggable } from "gsap/Draggable";
+
+  let lenis: Lenis | null = null;
+  let cleanup: (() => void) | null = null;
+
+  const initSmoothScroll = () => {
+    gsap.registerPlugin(ScrollTrigger, Draggable);
+
+    cleanup?.();
+    cleanup = null;
+
+    lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    function updateLenis(time: number) {
+      lenis?.raf(time * 1000);
+    }
+
+    const syncMenuPosition = () => {
+      (window as any).syncMenuPositionGlobal?.();
+      const drawer = document.querySelector(".menu-drawer");
+      if (drawer) {
+        Draggable.get(drawer)?.update(true);
+      }
+    };
+
+    const handleLenisScroll = () => {
+      ScrollTrigger.update();
+      syncMenuPosition();
+    };
+
+    lenis.on("scroll", handleLenisScroll);
+    gsap.ticker.add(updateLenis);
+    gsap.ticker.lagSmoothing(0);
+
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a[href*="#"]');
+      if (!target) return;
+
+      if (typeof (window as any).closeMenuGlobal === "function") {
+        (window as any).closeMenuGlobal?.();
+      }
+      syncMenuPosition();
+
+      const href = target.getAttribute("href");
+      if (!href) return;
+      const targetId = href.split("#")[1];
+
+      if (targetId || href === "#") {
+        e.preventDefault();
+        const el = href === "#" ? 0 : document.querySelector(`#${targetId}`);
+        if (el !== null) {
+          lenis?.scrollTo(el as HTMLElement, {
+            duration: 1.5,
+            lock: true,
+            onComplete: () => {
+              syncMenuPosition();
+            },
+          });
+        }
+      }
+    };
+
+    document.addEventListener("click", handleAnchorClick);
+
+    (window as any).lenis = lenis;
+
+    cleanup = () => {
+      lenis?.destroy();
+      lenis = null;
+      gsap.ticker.remove(updateLenis);
+      ScrollTrigger.removeEventListener("refresh", syncMenuPosition);
+      document.removeEventListener("click", handleAnchorClick);
+      syncMenuPosition();
+    };
+
+    ScrollTrigger.addEventListener("refresh", syncMenuPosition);
+    syncMenuPosition();
+
+    return cleanup;
+  };
+
+  initSmoothScroll();
+
+  document.addEventListener("astro:after-swap", initMenuOnSwap);
+
+  function initMenuOnSwap() {
+    initSmoothScroll();
+  }
+
+  document.addEventListener("astro:before-preparation", () => {
+    cleanup?.();
+  });
+</script>

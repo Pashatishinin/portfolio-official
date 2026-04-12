@@ -1,0 +1,66 @@
+---
+import Logo from "../../components/ui/buttons/Logo.astro";
+---
+
+<section
+  class="header fixed z-999 flex w-screen justify-between px-4 sm:px-16 py-8"
+>
+  <div>
+    <Logo />
+  </div>
+</section>
+
+<style>
+  .header {
+    mix-blend-mode: difference;
+
+    color: white;
+  }
+
+  .italic {
+    font-family: "Satoshi-Italica";
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  const headerMove = () => {
+    gsap.from(".header", {
+      y: "-150",
+      delay: 3.5,
+      duration: 2,
+      ease: "expo.inOut",
+    });
+  };
+
+  const setupScrollActive = () => {
+    const btn = document.querySelector("#btn-work");
+    if (!btn) return;
+    const bg = btn.querySelector(".work-bg");
+    const text = btn.querySelector("span");
+
+    const tl = gsap.timeline({
+      paused: true,
+      defaults: { ease: "power2.inOut" },
+    });
+
+    tl.to(bg, { x: "0%", duration: 0.4 }).to(
+      text,
+      { color: "#ffffff", duration: 0.2 },
+      "<",
+    );
+
+    ScrollTrigger.create({
+      trigger: "#works",
+      start: "top 20%",
+      end: "bottom 20%",
+      onEnter: () => tl.play(),
+      onLeave: () => tl.reverse(),
+      onEnterBack: () => tl.play(),
+      onLeaveBack: () => tl.reverse(),
+      // markers: true, // Для тестов
+    });
+  };
+  headerMove();
+  setupScrollActive();
+</script>
