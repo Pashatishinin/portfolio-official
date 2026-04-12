@@ -1,0 +1,73 @@
+---
+import { Image } from "astro:assets";
+import { TextEffect } from "../../../components";
+
+const { text, img } = Astro.props;
+---
+
+<section>
+  <div class="back z-10 fixed top-0 left-0 bg-main h-screen w-screen"></div>
+  <div class="flex flex-col text-main">
+    <div class="p-4 sm:p-16 pt-32 text-center">
+      <h1 class="text-[clamp(48px,11vw,180px)] -tracking-widest leading-[80%]">
+        <TextEffect delay={0.4} wait>{text}</TextEffect>
+      </h1>
+    </div>
+
+    <div class="h-full image">
+      <Image
+        src={img}
+        alt="Описание"
+        width={1920}
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  image {
+    height: 100% !important;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  p {
+    font-size: 18px;
+    line-height: 95%;
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const globalDelay = (window as any).HERO_DELAY;
+  const finalDelay = globalDelay - 1.2;
+
+  const initBackground = () => {
+    gsap.to(".back", {
+      yPercent: -150,
+      skewY: -15,
+      duration: 1.2,
+      ease: "expo.inOut",
+      delay: 0.1,
+    });
+  };
+
+  const moveImage = () => {
+    gsap.from(".image", {
+      yPercent: 10,
+      duration: 3,
+      ease: "expo.inOut",
+      delay: finalDelay,
+    });
+  };
+  initBackground();
+  moveImage();
+
+  document.addEventListener("astro:page-load", initBackground);
+</script>

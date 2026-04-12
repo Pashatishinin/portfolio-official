@@ -1,0 +1,120 @@
+---
+interface Props {
+  text?: string;
+  delay?: number;
+  start?: string;
+  className?: string;
+  wait?: boolean;
+}
+
+const {
+  text,
+  delay = 0,
+  start = "top 90%",
+  className = "",
+  wait = false,
+} = Astro.props;
+---
+
+<div
+  class={`text-effect-container ${className}`}
+  data-delay={delay}
+  data-start={start}
+  data-wait={wait}
+  style="visibility: hidden;"
+>
+  <div aria-hidden="true">
+    <slot />
+  </div>
+</div>
+
+<style is:global>
+  .line-mask {
+    overflow: hidden;
+    display: block;
+    white-space: nowrap;
+    margin-bottom: -0.5em;
+    padding-top: 0.15em;
+    padding-right: 0.15em;
+    padding-bottom: 0.5em;
+  }
+
+  .text-char {
+    display: inline-block;
+    will-change: transform;
+    margin-right: -0.02em;
+  }
+
+  .text-effect-container div {
+    display: inline-block;
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  function initTextEffects() {
+    const containers = document.querySelectorAll(".text-effect-container");
+
+    containers.forEach((container) => {
+      if (container.classList.contains("is-initialized")) return;
+
+      const propDelay = parseFloat(container.getAttribute("data-delay") || "0");
+      const shouldWait = container.getAttribute("data-wait") === "true";
+
+      const globalDelay = shouldWait ? (window as any).HERO_DELAY || 0 : 0;
+      const finalDelay = globalDelay + propDelay;
+      const start = container.getAttribute("data-start") || "top 80%";
+
+      const target =
+        container.querySelector("h1, h2, h3, p, span") || container;
+
+      const maskSplit = new SplitText(target, {
+        type: "lines",
+        linesClass: "line-mask",
+        tag: "span",
+      });
+
+      const textSplit = new SplitText(maskSplit.lines, {
+        type: "words, chars",
+        charsClass: "text-char",
+        tag: "span",
+      });
+
+      container.removeAttribute("aria-label");
+      target.removeAttribute("aria-label");
+
+      gsap.set(container, { visibility: "visible" });
+
+      gsap.from(textSplit.chars, {
+        yPercent: 200,
+        stagger: 0.01,
+        duration: 0.8,
+        ease: "power3.out",
+        delay: finalDelay,
+        scrollTrigger: {
+          trigger: target,
+          start: start,
+          once: true,
+          // markers: true,
+        },
+      });
+
+      container.classList.add("is-initialized");
+    });
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    document.fonts.ready.then(() => {
+      initTextEffects();
+    });
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    initTextEffects();
+  });
+</script>

@@ -1,0 +1,74 @@
+---
+import { FluidScene, PageTransition, PreLoader } from "../components";
+import SmoothScroll from "../components/animation/SmoothScroll.astro";
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <meta
+      name="description"
+      content="Portfolio of Pavlo Tishynin, a UI/UX Designer and Frontend Developer specializing in high-end digital experiences. Bridging the gap between aesthetic design and functional, creative code."
+    />
+
+    <title>Pavlo Tishynin</title>
+
+    <ClientRouter />
+  </head>
+  <body>
+    <PageTransition />
+    <PreLoader />
+    <FluidScene transition:persist />
+    <!-- <SmoothScroll /> -->
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+
+    font-family: var(--font-main);
+  }
+
+  body {
+    scroll-behavior: smooth;
+    max-width: 1920px;
+    overflow-x: clip;
+    margin: 0 auto;
+  }
+
+  .preloader-visited .preloader {
+    display: none !important;
+  }
+</style>
+
+<script is:inline>
+  function updateHeroDelay() {
+    const navEntries = performance.getEntriesByType("navigation");
+    const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+    const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
+
+    window.HERO_DELAY = isFirstLoad || isReload ? 3.6 : 0.2;
+
+    sessionStorage.setItem("alreadyVisited", "true");
+  }
+
+  updateHeroDelay();
+
+  document.addEventListener("astro:after-swap", () => {
+    window.HERO_DELAY = 0.2;
+
+    document.body.classList.add("preloader-visited");
+  });
+</script>

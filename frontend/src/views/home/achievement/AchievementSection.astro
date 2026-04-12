@@ -1,0 +1,47 @@
+---
+import { TextEffectLine } from "../../../components";
+import AchievementItem from "./ui/AchievementItem.astro";
+
+const achievements = [
+  { award: "Awwwards", result: "Nominee x 1", year: "2025" },
+  { award: "CSS Awards", result: "Star x 1" },
+  { award: "Orpetron", result: "OWDA x 1" },
+];
+---
+
+<section
+  id="achievement"
+  class="w-full p-4 md:p-16 grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20"
+>
+  <div class="lg:sticky lg:top-16 h-fit">
+    <h1 class="font-accent italic text-5xl md:text-6xl text-main leading-[75%]">
+      <TextEffectLine mixBlend blockColor="var(--color-main)">My</TextEffectLine
+      >
+    </h1>
+    <h1
+      class="text-4xl md:text-5xl font-bold uppercase text-main leading-[75%]"
+    >
+      <TextEffectLine mixBlend blockColor="var(--color-main)"
+        >Achievement</TextEffectLine
+      >
+    </h1>
+  </div>
+
+  <div class="flex flex-col w-full text-lg md:text-2xl text-main">
+    {achievements.map((item) => <AchievementItem {...item} />)}
+  </div>
+</section>
+
+<style>
+  #achievement .lg\:sticky {
+    mix-blend-mode: difference;
+  }
+
+  #achievement h1 {
+    color: white !important;
+  }
+  #achievement :global(.achievement-row) {
+    mix-blend-mode: difference;
+    color: white;
+  }
+</style>

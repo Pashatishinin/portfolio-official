@@ -1,0 +1,52 @@
+---
+import { LinkButton } from "../../../components";
+
+const socials = [
+  {
+    text: "LinkedIn",
+    href: "https://de.linkedin.com/in/pavlo-t-30b87032b",
+    aria: "Visit Pavlo Tishynin's LinkedIn profile",
+  },
+  {
+    text: "Behance",
+    href: "https://www.behance.net/529bea50",
+    aria: "View Pavlo Tishynin's portfolio on Behance",
+  },
+  {
+    text: "Dribbble",
+    href: "https://dribbble.com/pavlo-tishynin",
+    aria: "See Pavlo Tishynin's designs on Dribbble",
+  },
+  {
+    text: "Awwwards",
+    href: "https://www.awwwards.com/pavlo-tishynin/",
+    aria: "Check out Pavlo Tishynin's profile on Awwwards",
+  },
+];
+---
+
+<ul class="text-xl flex flex-col gap-2">
+  {
+    socials.map((link) => (
+      <li class="social-item">
+        <LinkButton
+          text={link.text}
+          href={link.href}
+          aria={link.aria}
+          class="h-0 leading-[70%] flex flex-col justify-center items-center"
+        />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .social-item :global(.block-line) {
+    opacity: 0.6;
+    transition: opacity 0.4s ease;
+  }
+
+  .social-item:hover :global(.block-line) {
+    opacity: 1;
+  }
+</style>

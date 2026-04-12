@@ -1,0 +1,20 @@
+---
+import AnimatedLink from "../../animation/AnimatedLink.astro";
+const { text, href = "#", class: className, aria } = Astro.props;
+---
+
+<div class="link-container cursor-pointer py-2 px-4 border border-white">
+  <AnimatedLink
+    text={text}
+    href={href}
+    aria={aria}
+    class="h-0 leading-[70%] flex flex-col justify-center items-center"
+  />
+</div>
+<style>
+  .link-container {
+    mix-blend-mode: difference;
+
+    color: white;
+  }
+</style>

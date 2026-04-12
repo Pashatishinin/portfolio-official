@@ -1,0 +1,296 @@
+---
+
+---
+
+<div id="fluid-container"></div>
+
+<script>
+  import * as THREE from "three";
+
+  const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const fluidShader = `
+    uniform float iTime;
+    uniform vec2 iResolution;
+    uniform vec4 iMouse;
+    uniform int iFrame;
+    uniform sampler2D iPreviousFrame;
+    uniform float uBrushSize;
+    uniform float uBrushStrength;
+    uniform float uFluidDecay;
+    uniform float uTrailLength;
+    uniform float uStopDecay;
+    varying vec2 vUv;
+    
+    vec2 ur, U;
+    float ln(vec2 p, vec2 a, vec2 b) {
+        return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));
+    }
+    vec4 t(vec2 v, int a, int b) {
+        return texture2D(iPreviousFrame, fract((v+vec2(float(a),float(b)))/ur));
+    }
+    vec4 t(vec2 v) {
+        return texture2D(iPreviousFrame, fract(v/ur));
+    }
+    float area(vec2 a, vec2 b, vec2 c) {
+        float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);
+        return sqrt(s*(s-A)*(s-B)*(s-C));
+    }
+    
+    void main() {
+        U = vUv * iResolution;
+        ur = iResolution.xy;
+        if (iFrame < 1) {
+            float w = 0.5+sin(0.2*U.x)*0.5;
+            float q = length(U-0.5*ur);
+            gl_FragColor = vec4(0.1*exp(-0.001*q*q),0,0,w);
+        } else {
+            vec2 v = U, A = v + vec2(1,1), B = v + vec2(1,-1), C = v + vec2(-1,1), D = v + vec2(-1,-1);
+            for (int i = 0; i < 8; i++) {
+                v -= t(v).xy; A -= t(A).xy; B -= t(B).xy; C -= t(C).xy; D -= t(D).xy;
+            }
+            vec4 me = t(v);
+            vec4 n = t(v, 0, 1), e = t(v, 1, 0), s = t(v, 0, -1), w = t(v, -1, 0);
+            vec4 ne = .25*(n+e+s+w);
+            me = mix(t(v), ne, vec4(0.15,0.15,0.95,0.));
+            me.z = me.z - 0.01*((area(A,B,C)+area(B,C,D))-4.);
+            vec4 pr = vec4(e.z,w.z,n.z,s.z);
+            me.xy = me.xy + 100.*vec2(pr.x-pr.y, pr.z-pr.w)/ur;
+            me.xy *= uFluidDecay;
+            me.z *= uTrailLength;
+            if (iMouse.z > 0.0) {
+                vec2 mousePos = iMouse.xy;
+                vec2 mousePrev = iMouse.zw;
+                float q = ln(U, mousePos, mousePrev);
+                vec2 m = mousePos - mousePrev;
+                float l = length(m);
+                if (l > 0.0) m = min(l, 10.0) * m / l;
+                float brushSizeFactor = 1e-4 / uBrushSize;
+                float strengthFactor = 0.03 * uBrushStrength;
+                float falloff = pow(exp(-brushSizeFactor*q*q*q), 0.5);
+                me.xyw += strengthFactor * falloff * vec3(m, 10.0);
+            }
+            gl_FragColor = clamp(me, -0.4, 0.4);
+        }
+    }
+  `;
+
+  const displayShader = `
+    uniform float iTime;
+    uniform vec2 iResolution;
+    uniform sampler2D iFluid;
+    uniform float uDistortionAmount;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    uniform vec3 uColor3;
+    uniform vec3 uColor4;
+    uniform float uColorIntensity;
+    uniform float uSoftness;
+    varying vec2 vUv;
+    
+    float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+    void main() {
+      vec2 fragCoord = vUv * iResolution;
+      vec4 fluid = texture2D(iFluid, vUv);
+      vec2 fluidVel = fluid.xy;
+      float mr = min(iResolution.x, iResolution.y);
+      vec2 uv = (fragCoord * 2.0 - iResolution.xy) / mr;
+      uv += fluidVel * (0.5 * uDistortionAmount);
+      float d = -iTime * 0.5;
+      float a = 0.0;
+      for (float i = 0.0; i < 8.0; ++i) {
+        a += cos(i - d - a * uv.x);
+        d += sin(uv.y * i + a);
+      }
+      d += iTime * 0.5;
+      float mixer1 = mix(cos(uv.x * d) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      float mixer2 = mix(cos(uv.y * a) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      float mixer3 = mix(sin(d + a) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      vec3 col = mix(uColor1, uColor2, mixer1);
+      col = mix(col, uColor3, mixer2);
+      col = mix(col, uColor4, mixer3 * 0.4);
+     col *= uColorIntensity;
+
+      float n = hash(vUv + fract(iTime));
+  
+      col += (n - 0.9) * 0.15; 
+      
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+  async function initFluid() {
+    const container = document.getElementById("fluid-container");
+    if (!container) {
+      return;
+    }
+
+    if (container.querySelector("canvas")) {
+      return;
+    }
+
+    class FluidScene {
+      container: HTMLElement;
+      width: number;
+      height: number;
+      scene: THREE.Scene;
+      camera: THREE.OrthographicCamera;
+      renderer: THREE.WebGLRenderer;
+      mouse: THREE.Vector4;
+      frame: number;
+      fluidMaterial!: THREE.ShaderMaterial;
+      displayMaterial!: THREE.ShaderMaterial;
+      bufferA!: THREE.WebGLRenderTarget;
+      bufferB!: THREE.WebGLRenderTarget;
+      quad!: THREE.Mesh;
+
+      constructor(container: HTMLElement) {
+        this.container = container;
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        this.renderer = new THREE.WebGLRenderer();
+
+        this.renderer.setSize(this.width, this.height);
+        this.container.appendChild(this.renderer.domElement);
+
+        this.mouse = new THREE.Vector4(0, 0, 0, 0);
+        this.frame = 0;
+
+        this.initBuffers();
+        this.initMeshes();
+        this.setupEvents();
+        this.animate();
+      }
+
+      initBuffers() {
+        const params = {
+          minFilter: THREE.NearestFilter,
+          magFilter: THREE.NearestFilter,
+          type: THREE.FloatType,
+        };
+        this.bufferA = new THREE.WebGLRenderTarget(
+          this.width,
+          this.height,
+          params,
+        );
+        this.bufferB = new THREE.WebGLRenderTarget(
+          this.width,
+          this.height,
+          params,
+        );
+      }
+
+      initMeshes() {
+        this.fluidMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            iTime: { value: 0 },
+            iResolution: { value: new THREE.Vector2(this.width, this.height) },
+            iMouse: { value: this.mouse },
+            iFrame: { value: 0 },
+            iPreviousFrame: { value: null },
+            uBrushSize: { value: 0.5 },
+            uBrushStrength: { value: 1.0 },
+            uFluidDecay: { value: 0.98 },
+            uTrailLength: { value: 0.95 },
+            uStopDecay: { value: 0.9 },
+          },
+          vertexShader,
+          fragmentShader: fluidShader,
+        });
+
+        this.displayMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            iTime: { value: 0 },
+            iResolution: { value: new THREE.Vector2(this.width, this.height) },
+            iFluid: { value: null },
+            uDistortionAmount: { value: 1.0 },
+
+            uColor1: { value: new THREE.Color(0xffffff) },
+            uColor2: { value: new THREE.Color(0xf5f5f7) },
+            uColor3: { value: new THREE.Color(0xfffaf0) },
+            uColor4: { value: new THREE.Color(0xf0f4f8) },
+            uColorIntensity: { value: 1.0 },
+            uSoftness: { value: 0.5 },
+          },
+          vertexShader,
+          fragmentShader: displayShader,
+        });
+
+        this.quad = new THREE.Mesh(
+          new THREE.PlaneGeometry(2, 2),
+          this.fluidMaterial,
+        );
+        this.scene.add(this.quad);
+      }
+
+      setupEvents() {
+        window.addEventListener("pointermove", (e) => {
+          this.mouse.z = this.mouse.x;
+          this.mouse.w = this.mouse.y;
+          this.mouse.x = e.clientX;
+          this.mouse.y = this.height - e.clientY;
+        });
+
+        window.addEventListener("pointerdown", () => (this.mouse.z = 1.0));
+        window.addEventListener("pointerup", () => (this.mouse.z = 0.0));
+      }
+
+      animate() {
+        requestAnimationFrame(() => this.animate());
+        const t = performance.now() * 0.001;
+
+        this.quad.material = this.fluidMaterial;
+        this.fluidMaterial.uniforms.iPreviousFrame.value = this.bufferB.texture;
+        this.fluidMaterial.uniforms.iFrame.value = this.frame;
+        this.fluidMaterial.uniforms.iTime.value = t;
+
+        this.renderer.setRenderTarget(this.bufferA);
+        this.renderer.render(this.scene, this.camera);
+
+        this.quad.material = this.displayMaterial;
+        this.displayMaterial.uniforms.iFluid.value = this.bufferA.texture;
+        this.displayMaterial.uniforms.iTime.value = t;
+
+        this.renderer.setRenderTarget(null);
+        this.renderer.render(this.scene, this.camera);
+
+        let temp = this.bufferA;
+        this.bufferA = this.bufferB;
+        this.bufferB = temp;
+        this.frame++;
+      }
+    }
+
+    if (container) {
+      (window as any).fluidBackground = new FluidScene(container);
+    }
+  }
+  if (document.readyState === "complete") {
+    initFluid();
+  } else {
+    window.addEventListener("load", initFluid);
+  }
+
+  document.addEventListener("astro:after-swap", initFluid);
+</script>
+
+<style>
+  #fluid-container {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #000;
+  }
+</style>

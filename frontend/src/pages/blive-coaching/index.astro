@@ -1,0 +1,41 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import FooterSection from "../../views/footer/FooterSection.astro";
+import HeaderSectionProject from "../../views/header/HeaderSectionProject.astro";
+import {
+  AboutProjectSection,
+  HeroSection,
+  NextProjectSection,
+  ShortPreviewSection,
+} from "../../views/project";
+
+import mainImg from "../../assets/blive/main.jpg";
+
+import video1 from "../../assets/blive/1.mp4";
+import video2 from "../../assets/blive/2.mp4";
+import video3 from "../../assets/blive/3.mp4";
+import video4 from "../../assets/blive/4.mp4";
+import video5 from "../../assets/blive/5.mp4";
+import video6 from "../../assets/blive/6.mp4";
+
+const videos = [
+  { src: video1, poster: "/1.jpg" },
+  { src: video2, poster: "/1.jpg" },
+  { src: video3, poster: "/1.jpg" },
+  { src: video4, poster: "/1.jpg" },
+  { src: video5, poster: "/1.jpg" },
+  { src: video6, poster: "/1.jpg" },
+];
+
+const role = ["Design", "Frontend Development", "CMS Architecture"];
+const tools = ["React.js", "Vite", "Tailwind CSS", "GSAP", "Figma"];
+---
+
+<Layout>
+  <HeaderSectionProject />
+  <HeroSection text="BLive Coaching" img={mainImg} />
+  <AboutProjectSection role={role} tools={tools} year="2024" />
+  <ShortPreviewSection listVideo={videos} />
+  <NextProjectSection link="/vettar" />
+  <FooterSection />
+</Layout>

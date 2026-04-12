@@ -1,0 +1,62 @@
+---
+import { TextEffectLine } from "../../../components";
+---
+
+<section
+  id="preview"
+  class="relative z-10 flex flex-col w-full px-4 sm:px-16 pb-32 pt-64 lg:py-64 gap-16 lg:gap-32 text-background overflow-hidden"
+>
+  <div class="self-start w-full max-w-[800px]">
+    <h2
+      class="text-left font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%]"
+    >
+      <TextEffectLine align="left" blockColor="#141314">
+        Independent developer based in Germany, bridging the gap between
+        high-end UI/UX and robust backend logic through pixel-perfect frontend
+        implementation.
+      </TextEffectLine>
+    </h2>
+  </div>
+
+  <div class="self-end w-full max-w-[700px]">
+    <h2
+      class="text-right font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%]"
+    >
+      <TextEffectLine align="right" blockColor="#141314">
+        I transform complex ideas into aesthetically pleasing and user-friendly
+        digital solutions.
+      </TextEffectLine>
+    </h2>
+  </div>
+</section>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const initAnimation = () => {
+    ScrollTrigger.getAll().forEach((t) => {
+      if (t.vars.trigger === "#preview") t.kill();
+    });
+
+    const fluid = (window as any).fluidBackground;
+
+    if (fluid && fluid.displayMaterial) {
+      gsap.to(fluid.displayMaterial.uniforms.uColor1.value, {
+        r: 0.95,
+        g: 0.8,
+        b: 0.8,
+        scrollTrigger: {
+          trigger: "#preview",
+          start: "top center",
+          end: "bottom center",
+          scrub: 1,
+        },
+      });
+    }
+  };
+
+  window.addEventListener("load", initAnimation);
+</script>

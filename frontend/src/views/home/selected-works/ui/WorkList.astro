@@ -1,0 +1,127 @@
+---
+import WorkItem from "./WorkItem.astro";
+
+const projects = [
+  {
+    title: "8enjamin",
+    link: "/8enjamin",
+    videoSrc: "/video/1.mp4",
+    poster: "/1.jpg",
+  },
+  {
+    title: "Ahin Anburaja",
+    link: "/ahin-anburaja",
+    videoSrc: "/video/3.mp4",
+    poster: "/1.jpg",
+  },
+  {
+    title: "BLive Coaching",
+    link: "/blive-coaching",
+    videoSrc: "/video/2.mp4",
+    poster: "/2.jpg",
+  },
+  {
+    title: "Vettar",
+    link: "/vettar",
+    videoSrc: "/video/4.mp4",
+    poster: "/4.jpg",
+  },
+];
+---
+
+<div class="work-container w-full">
+  {projects.map((project) => <WorkItem {...project} />)}
+</div>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+  //   import Lenis from "lenis";
+
+  const initWork = () => {
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+
+    // const lenis = new Lenis();
+    // lenis.on("scroll", ScrollTrigger.update);
+    // gsap.ticker.add((time) => {
+    //   lenis.raf(time * 1000);
+    // });
+    gsap.ticker.lagSmoothing(0);
+
+    ScrollTrigger.getAll().forEach((st) => {
+      if (
+        st.trigger &&
+        (st.trigger as HTMLElement).classList.contains("work-item")
+      ) {
+        st.kill();
+      }
+    });
+
+    gsap.utils.toArray(".work-item").forEach((item: any) => {
+      const img = item.querySelector(".work-item-img");
+      const nameH1 = item.querySelector(".work-item-name h1");
+
+      const link = item.querySelector(".work-item-link");
+
+      gsap.fromTo(
+        link,
+        {
+          y: 100,
+        },
+        {
+          y: 0,
+
+          ease: "none",
+          scrollTrigger: {
+            trigger: item,
+            start: "top bottom",
+            end: "bottom center",
+            scrub: 0.5,
+            // markers: true,
+          },
+        },
+      );
+      const split = SplitText.create(nameH1, {
+        type: "chars",
+        mask: "chars",
+      });
+
+      ScrollTrigger.create({
+        trigger: item,
+        start: "top bottom",
+        end: "top top",
+        scrub: 0.5,
+        animation: gsap.fromTo(
+          img,
+          {
+            clipPath: "polygon(25% 25%, 75% 40%, 100% 100%, 0% 100%)",
+          },
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            ease: "none",
+          },
+        ),
+      });
+
+      ScrollTrigger.create({
+        trigger: item,
+        start: "bottom bottom",
+        end: "bottom top",
+        scrub: 0.5,
+        animation: gsap.fromTo(
+          img,
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          },
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 75% 60%, 25% 75%)",
+            ease: "none",
+          },
+        ),
+      });
+    });
+    ScrollTrigger.refresh();
+  };
+  document.addEventListener("astro:page-load", initWork);
+</script>

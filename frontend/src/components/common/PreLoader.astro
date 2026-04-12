@@ -1,0 +1,132 @@
+---
+import { TextEffect } from "../../components";
+const images = [
+  "/preloader/1.png",
+  "/preloader/2.png",
+  "/preloader/3.png",
+  "/preloader/4.png",
+  "/preloader/5.png",
+  "/preloader/6.png",
+];
+---
+
+<section
+  class="fixed top-0 left-0 preloader z-9999 w-screen h-screen bg-main flex flex-col justify-center items-center"
+>
+  <div
+    class="absolute w-[280px] h-[160px] lg:w-[350px] lg:h-[200px] flex justify-center items-center"
+  >
+    <div class="relative w-full h-full overflow-hidden">
+      {
+        images.map((src) => (
+          <div class="img-wrapper absolute bottom-0 left-0 w-full h-0 overflow-hidden scale-50">
+            <img src={src} class="w-full h-full object-cover" alt="" />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  <div
+    class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[300px] lg:gap-[400px] px-6"
+  >
+    <div class="block text-center lg:text-right">
+      <h1
+        class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+      >
+        <TextEffect delay={0.6}>Pavlo</TextEffect>
+      </h1>
+      <h1
+        class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+      >
+        <TextEffect delay={0.7}>Tishynin</TextEffect>
+      </h1>
+    </div>
+
+    <div class="block text-center lg:text-left">
+      <h1
+        class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+      >
+        <TextEffect delay={0.6}>Creative</TextEffect>
+      </h1>
+      <h1
+        class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+      >
+        <TextEffect delay={0.7}>Technologist</TextEffect>
+      </h1>
+    </div>
+  </div>
+</section>
+
+<script>
+  import gsap from "gsap";
+
+  const setup = () => {
+    const preloader = document.querySelector(".preloader");
+    if (!preloader) return;
+
+    const navEntries = performance.getEntriesByType("navigation");
+    const isReload =
+      navEntries.length > 0 &&
+      (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+    const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
+
+    const initGapAnimation = () => {
+      const isMobile = window.innerWidth < 1024;
+
+      gsap.from(".grid-container", {
+        gap: isMobile ? "5px" : "20px",
+        duration: 1.5,
+        delay: 1.2,
+        ease: "expo.out",
+      });
+    };
+
+    const initBgPreloader = () => {
+      gsap.to(".preloader", {
+        yPercent: -150,
+        skewY: -15,
+        duration: 1.5,
+        delay: 3.2,
+        ease: "expo.inOut",
+        onStart: () => {
+          sessionStorage.setItem("alreadyVisited", "true");
+        },
+        onComplete: () => {
+          gsap.set(".preloader", { skewY: 0 });
+        },
+      });
+    };
+
+    function initPreloaderImages() {
+      const wrappers = document.querySelectorAll(".img-wrapper");
+      if (wrappers.length === 0) return;
+
+      gsap.set(wrappers, { height: "0%", yPercent: 0, scale: 1, skewY: 20 });
+
+      const tl = gsap.timeline({
+        delay: 2.0,
+      });
+
+      wrappers.forEach((wrapper, index) => {
+        tl.to(wrapper, {
+          height: "100%",
+          skewY: 0,
+          duration: 0.1 + index * 0.05,
+          ease: "expo.out",
+        });
+      });
+    }
+
+    if (isFirstLoad || isReload) {
+      initBgPreloader();
+      initGapAnimation();
+      initPreloaderImages();
+    } else {
+      gsap.set(preloader, { display: "none" });
+    }
+
+    document.addEventListener("astro:page-load", initPreloaderImages);
+  };
+
+  setup();
+</script>

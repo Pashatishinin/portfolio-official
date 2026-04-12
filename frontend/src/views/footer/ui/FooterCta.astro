@@ -1,0 +1,55 @@
+---
+import { TextEffect, TextEffectLine } from "../../../components";
+---
+
+<div class="footer-cta">
+  <p class="mb-4">
+    <TextEffectLine blockColor="var(--color-secondary)">
+      Don't be shy
+    </TextEffectLine>
+  </p>
+
+  <a
+    href="mailto:tishyninpavlo@gmail.com"
+    class="link group inline-flex cursor-pointer outline-none"
+    aria-label="Send an email to Pavlo Tishynin"
+  >
+    <div class="flex flex-wrap">
+      <h1
+        class="font-accent text-[clamp(60px,10vw,100px)] text-white -tracking-widest leading-[75%] group-hover:-translate-y-2 transition-transform duration-500"
+      >
+        <TextEffect>Say</TextEffect>
+      </h1>
+      <h1
+        class="text-[clamp(60px,10vw,100px)] text-white -tracking-widest leading-[75%] group-hover:-translate-y-2 transition-transform duration-500 delay-75 ml-4"
+      >
+        <TextEffect>Hello</TextEffect>
+      </h1>
+    </div>
+  </a>
+</div>
+
+<style>
+  .link {
+    position: relative;
+    padding-bottom: 8px;
+  }
+
+  .link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+</style>

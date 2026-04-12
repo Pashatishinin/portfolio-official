@@ -1,0 +1,196 @@
+---
+interface Props {
+  animateOnScroll?: boolean;
+  delay?: number;
+  blockColor?: string;
+  stagger?: number;
+  duration?: number;
+  align?: "left" | "center" | "right";
+  title?: boolean;
+  mixBlend?: boolean;
+}
+
+const {
+  animateOnScroll = true,
+  delay = 0,
+  blockColor = "#fff",
+  stagger = 0.15,
+  duration = 0.75,
+  align = "left",
+  title = false,
+  mixBlend = false,
+} = Astro.props;
+
+const paddingValue = title ? "0.15em" : "0.5em";
+---
+
+<div
+  class:list={["text-reveal-container", { "mix-blend-active": mixBlend }]}
+  data-animate={animateOnScroll}
+  data-delay={delay}
+  data-color={blockColor}
+  data-stagger={stagger}
+  data-duration={duration}
+  data-align={align}
+  style={`--reveal-padding-bottom: ${paddingValue};`}
+>
+  <div class="reveal-content" aria-hidden="true">
+    <slot />
+  </div>
+</div>
+
+<style is:global>
+  .block-line-wrapper {
+    position: relative;
+    width: fit-content;
+    display: block;
+
+    overflow: hidden;
+    margin-bottom: -0.5em;
+    padding-top: 0.15em;
+    padding-right: 0.15em;
+    padding-bottom: var(--reveal-padding-bottom);
+  }
+
+  .text-reveal-container.mix-blend-active .split-line {
+    mix-blend-mode: difference !important;
+    color: #fff !important;
+    position: relative;
+    z-index: 1;
+  }
+
+  .block-revealer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+    transform: scaleX(0);
+
+    mix-blend-mode: normal !important;
+  }
+
+  .text-reveal-container.mix-blend-active .reveal-content {
+    mix-blend-mode: normal !important;
+  }
+
+  .reveal-content {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s ease;
+  }
+
+  .reveal-content.is-ready {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .split-line {
+    position: relative;
+    opacity: 0;
+  }
+
+  .text-reveal-container[data-align="left"] .block-line-wrapper {
+    margin-right: auto;
+    margin-left: 0;
+  }
+  .text-reveal-container[data-align="center"] .block-line-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .text-reveal-container[data-align="right"] .block-line-wrapper {
+    margin-left: auto;
+    margin-right: 0;
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  function initReveal() {
+    const containers = document.querySelectorAll(".text-reveal-container");
+
+    containers.forEach((container) => {
+      const target = container.querySelector(".reveal-content");
+      if (!target || target.classList.contains("is-ready")) return;
+
+      const { delay, color, stagger, duration, align, animate } = (
+        container as HTMLElement
+      ).dataset;
+
+      const split = new SplitText(target, {
+        type: "lines",
+        linesClass: "split-line",
+      });
+
+      const allLines: HTMLElement[] = [];
+      const allBlocks: HTMLElement[] = [];
+
+      split.lines.forEach((line) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "block-line-wrapper";
+
+        const block = document.createElement("div");
+        block.className = "block-revealer";
+        block.style.backgroundColor = color || "#fff";
+
+        line.parentNode?.insertBefore(wrapper, line);
+        wrapper.appendChild(line);
+        wrapper.appendChild(block);
+
+        allLines.push(line as HTMLElement);
+        allBlocks.push(block);
+      });
+
+      target.classList.add("is-ready");
+
+      const mainTl = gsap.timeline({
+        paused: true,
+        delay: Number(delay),
+      });
+
+      allLines.forEach((line, i) => {
+        const block = allBlocks[i];
+        const lineTl = gsap.timeline();
+
+        lineTl
+          .set(line, { opacity: 0 })
+          .set(block, { scaleX: 0, transformOrigin: "left center" })
+          .to(block, {
+            scaleX: 1,
+            duration: Number(duration),
+            ease: "power4.inOut",
+          })
+          .set(line, { opacity: 1 })
+          .set(block, { transformOrigin: "right center" })
+          .to(block, {
+            scaleX: 0,
+            duration: Number(duration),
+            ease: "power4.inOut",
+          });
+
+        mainTl.add(lineTl, i * Number(stagger));
+      });
+
+      if (animate === "true") {
+        ScrollTrigger.create({
+          trigger: container,
+          start: "top 90%",
+          onEnter: () => mainTl.play(),
+          once: true,
+        });
+      } else {
+        mainTl.play();
+      }
+    });
+  }
+
+  initReveal();
+  document.addEventListener("astro:after-swap", initReveal);
+</script>

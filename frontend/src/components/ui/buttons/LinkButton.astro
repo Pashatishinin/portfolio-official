@@ -1,0 +1,88 @@
+---
+interface Props {
+  aria?: string;
+  text: string;
+  href?: string;
+  class?: string;
+}
+
+const { text, href = "#", class: className, aria } = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={["logo-container inline-block cursor-pointer", className]}
+  data-scroll-link
+  aria-label={aria}
+>
+  <div class="overflow-hidden h-[20px] relative">
+    <div class="logo-wrapper">
+      <p class="logo-text m-0">{text}</p>
+      <p class="logo-text m-0 absolute top-0 left-0 w-full opacity-0">
+        {text}
+      </p>
+    </div>
+  </div>
+  <slot />
+</a>
+
+<script>
+  import gsap from "gsap";
+  import { SplitText } from "gsap/SplitText";
+
+  gsap.registerPlugin(SplitText);
+
+  function initAnimations() {
+    const containers = document.querySelectorAll(".logo-container");
+
+    containers.forEach((container) => {
+      if (container.getAttribute("data-animated")) return;
+
+      const texts = container.querySelectorAll(".logo-text");
+      if (texts.length < 2) return;
+
+      const firstText = texts[0];
+      const secondText = texts[1];
+
+      const split1 = new SplitText(firstText, { type: "chars" });
+      const split2 = new SplitText(secondText, { type: "chars" });
+
+      gsap.set(secondText, { opacity: 1 });
+      gsap.set(split2.chars, { yPercent: 100 });
+
+      const tl = gsap.timeline({ paused: true });
+
+      tl.to(split1.chars, {
+        yPercent: -100,
+        stagger: 0.02,
+        duration: 0.4,
+        ease: "power2.inOut",
+      }).to(
+        split2.chars,
+        {
+          yPercent: 0,
+          stagger: 0.02,
+          duration: 0.4,
+          ease: "power2.inOut",
+        },
+        "<",
+      );
+
+      container.addEventListener("mouseenter", () => tl.play());
+      container.addEventListener("mouseleave", () => tl.reverse());
+
+      container.setAttribute("data-animated", "true");
+    });
+  }
+
+  initAnimations();
+
+  document.addEventListener("astro:after-swap", initAnimations);
+</script>
+
+<style>
+  .logo-text {
+    line-height: 24px;
+    white-space: nowrap;
+  }
+</style>

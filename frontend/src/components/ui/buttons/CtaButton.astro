@@ -1,0 +1,62 @@
+---
+const { link = "#", text = "" } = Astro.props;
+const arrowIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 0 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 0 0 0 1.42a1 1 0 0 0 1.42 0l5-5a1 1 0 0 0 .21-.33a1 1 0 0 0 0-.76"></path></svg>`;
+---
+
+<a href={link} class="custom-button flex items-center no-underline group">
+  <span
+    class="icon-wrapper left-icon bg-secondary text-main rounded-full flex items-center justify-center"
+  >
+    <Fragment set:html={arrowIcon} />
+  </span>
+
+  <span
+    class="bg-secondary text-main px-6 py-3 rounded-4xl font-medium whitespace-nowrap"
+  >
+    {text}
+  </span>
+
+  <span
+    class="icon-wrapper right-icon bg-secondary text-main rounded-full flex items-center justify-center"
+  >
+    <Fragment set:html={arrowIcon} />
+  </span>
+</a>
+
+<style>
+  .custom-button {
+    cursor: pointer;
+    mix-blend-mode: difference;
+    display: inline-flex;
+  }
+
+  .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .left-icon {
+    width: 0;
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  .right-icon {
+    width: 48px;
+    opacity: 1;
+  }
+
+  .custom-button:hover .left-icon {
+    width: 48px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .custom-button:hover .right-icon {
+    width: 0;
+    opacity: 0;
+    transform: translateX(10px);
+  }
+</style>
