@@ -1,12 +1,12 @@
 ---
 import { TextEffect } from "../../components";
 const images = [
-  "/preloader/101.png",
-  "/preloader/102.png",
-  "/preloader/103.png",
-  "/preloader/104.png",
-  "/preloader/105.png",
-  "/preloader/106.png",
+  "/preloader/101.avif",
+  "/preloader/102.avif",
+  "/preloader/103.avif",
+  "/preloader/104.avif",
+  "/preloader/105.avif",
+  "/preloader/106.avif",
 ];
 ---
 
@@ -20,7 +20,12 @@ const images = [
       {
         images.map((src) => (
           <div class="img-wrapper absolute bottom-0 left-0 w-full h-0 overflow-hidden scale-50">
-            <img src={src} class="w-full h-full object-cover" alt="" />
+            <img
+              src={src}
+              class="w-full h-full object-cover"
+              alt=""
+              fetchpriority="high"
+            />
           </div>
         ))
       }
