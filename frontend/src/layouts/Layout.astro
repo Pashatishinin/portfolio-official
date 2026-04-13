@@ -17,6 +17,8 @@ import { ClientRouter } from "astro:transitions";
       name="description"
       content="Portfolio of Pavlo Tishynin, a UI/UX Designer and Frontend Developer specializing in high-end digital experiences. Bridging the gap between aesthetic design and functional, creative code."
     />
+    <!-- <link rel="preconnect" href="https://stream.mux.com" />
+    <link rel="preconnect" href="https://inferred.litix.io" /> -->
 
     <title>Pavlo Tishynin</title>
 
@@ -25,7 +27,7 @@ import { ClientRouter } from "astro:transitions";
   <body>
     <PageTransition />
     <PreLoader />
-    <FluidScene transition:persist />
+    <FluidScene transition:persist client:visible />
     <!-- <SmoothScroll /> -->
     <slot />
   </body>
