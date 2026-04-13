@@ -8,56 +8,36 @@
 <script>
   import gsap from "gsap";
 
-  const debugPreloader = () => {
-    console.log("--- Preloader Check ---");
+  const initPageTransitions = () => {
+    const overlay = document.getElementById("page-transition-overlay");
+    if (!overlay) return;
 
-    const preloader = document.querySelector(".preloader");
-    console.log("1. Preloader element found:", !!preloader);
+    gsap.set(overlay, { yPercent: 120, skewY: 0 });
 
-    const navEntries = performance.getEntriesByType("navigation");
-    const navType =
-      navEntries.length > 0
-        ? (navEntries[0] as PerformanceNavigationTiming).type
-        : "unknown";
-    console.log("2. Navigation type:", navType);
+    document.addEventListener(
+      "astro:before-preparation",
+      (ev) => {
+        const originalLoader = ev.loader;
 
-    const alreadyVisited = sessionStorage.getItem("alreadyVisited");
-    console.log("3. Session storage 'alreadyVisited':", alreadyVisited);
+        ev.loader = async () => {
+          await gsap.to(overlay, {
+            yPercent: -130,
+            skewY: -1,
+            duration: 1.2,
+            ease: "expo.out",
+            delay: 0.1,
+          });
 
-    const isReload = navType === "reload";
-    const isFirstLoad = !alreadyVisited;
-
-    console.log(
-      "4. Decision -> isFirstLoad:",
-      isFirstLoad,
-      "| isReload:",
-      isReload,
+          await originalLoader();
+        };
+      },
+      { once: true },
     );
 
-    if (isFirstLoad || isReload) {
-      console.log("5. STARTING ANIMATION");
-
-      // Твоя логика анимации
-      const tl = gsap.timeline({
-        onStart: () => console.log("6. GSAP Timeline Started"),
-        onComplete: () => console.log("7. GSAP Timeline Finished"),
-      });
-
-      // ... (остальной код анимации)
-
-      // В конце анимации или в onStart ставим флаг
-      sessionStorage.setItem("alreadyVisited", "true");
-    } else {
-      console.log("5. SKIPPING ANIMATION (Already visited)");
-      if (preloader) {
-        (preloader as HTMLElement).style.display = "none";
-      }
-    }
+    document.addEventListener("astro:after-swap", () => {
+      gsap.set(overlay, { yPercent: 120 });
+    });
   };
 
-  // Важно: слушаем событие загрузки страницы Astro
-  document.addEventListener("astro:page-load", () => {
-    console.log("EVENT: astro:page-load triggered");
-    debugPreloader();
-  });
+  document.addEventListener("astro:page-load", initPageTransitions);
 </script>
