@@ -2,6 +2,7 @@
 import { object } from "astro:schema";
 import { TextEffectLine, CtaButton } from "../../../../components";
 import { MuxPlayer } from "@mux/mux-player-astro";
+import { Image } from "astro:assets";
 
 interface Props {
   title: string;
@@ -15,21 +16,39 @@ const { title, link, videoSrc, imgSrc, poster } = Astro.props;
 
 const userAgent = Astro.request.headers.get("user-agent") || "";
 const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+const customPoster: string = (poster || imgSrc || "").toString();
 ---
 
 <section class="work-item">
   <div class="work-item-img">
-    <MuxPlayer
-      playbackId={videoSrc}
-      metadata={{ video_title: "My Astro Video" }}
-      autoplay="muted"
-      streamType="on-demand"
-      loop
-      muted
-      playsInline
-      preload="metadata"
-      class="media-content"
-    />
+    {
+      /* Если это НЕ мобилка и есть видео — грузим плеер с кастомным постером */
+      !isMobile && videoSrc ? (
+        <MuxPlayer
+          playbackId={videoSrc}
+          metadata={{ video_title: title }}
+          autoplay="muted"
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster={customPoster}
+          class="media-content"
+        />
+      ) : (
+        /* На мобилках (или если нет видео) — показываем только оптимизированную картинку */
+        /* Astro автоматически сожмет её и переведет в WebP */
+        <Image
+          src={poster || imgSrc || "/placeholder.webp"}
+          alt={title}
+          width={1000}
+          height={1000}
+          class="media-content"
+          loading="eager"
+          fetchpriority="high"
+        />
+      )
+    }
     <!-- {
       videoSrc ? (
         <video autoplay muted loop playsinline poster={poster}>
