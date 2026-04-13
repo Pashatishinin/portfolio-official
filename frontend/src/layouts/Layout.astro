@@ -60,8 +60,6 @@ import { ClientRouter } from "astro:transitions";
     const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
 
     window.HERO_DELAY = isFirstLoad || isReload ? 3.6 : 0.2;
-
-    sessionStorage.setItem("alreadyVisited", "true");
   }
 
   updateHeroDelay();
