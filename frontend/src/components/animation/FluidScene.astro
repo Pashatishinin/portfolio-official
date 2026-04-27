@@ -192,6 +192,28 @@
         );
       }
 
+      onResize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+
+        // Обновляем размер холста
+        this.renderer.setSize(this.width, this.height);
+
+        // Обновляем разрешение в шейдерах
+        this.fluidMaterial.uniforms.iResolution.value.set(
+          this.width,
+          this.height,
+        );
+        this.displayMaterial.uniforms.iResolution.value.set(
+          this.width,
+          this.height,
+        );
+
+        // Обновляем размер буферов, чтобы картинка не растягивалась
+        this.bufferA.setSize(this.width, this.height);
+        this.bufferB.setSize(this.width, this.height);
+      }
+
       initMeshes() {
         this.fluidMaterial = new THREE.ShaderMaterial({
           uniforms: {
@@ -245,8 +267,10 @@
 
         window.addEventListener("pointerdown", () => (this.mouse.z = 1.0));
         window.addEventListener("pointerup", () => (this.mouse.z = 0.0));
-      }
 
+        // 2. И ВОТ ЭТУ СТРОКУ ДОБАВЛЯЕМ В КОНЕЦ setupEvents
+        window.addEventListener("resize", () => this.onResize());
+      }
       animate() {
         requestAnimationFrame(() => this.animate());
         const t = performance.now() * 0.001;

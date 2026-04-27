@@ -27,8 +27,9 @@ import { ClientRouter } from "astro:transitions";
   <body>
     <PageTransition />
     <PreLoader />
+
     <FluidScene transition:persist client:visible />
-    <!-- <SmoothScroll /> -->
+    <SmoothScroll />
     <slot />
   </body>
 </html>
