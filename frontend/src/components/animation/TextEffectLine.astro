@@ -113,6 +113,40 @@ const paddingValue = title ? "0.15em" : "0.5em";
 
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
+  const NBSP = " ";
+
+  function fixOrphans(target: Element) {
+    const originalHTML = target.innerHTML;
+    const tempSplit = new SplitText(target, { type: "lines" });
+    const pairs: [string, string][] = [];
+
+    for (let i = tempSplit.lines.length - 1; i >= 1; i--) {
+      const lineEl = tempSplit.lines[i] as HTMLElement;
+      const words = lineEl.textContent?.trim().split(/\s+/).filter(Boolean) ?? [];
+      if (words.length === 1) {
+        const prevEl = tempSplit.lines[i - 1] as HTMLElement;
+        const prevWords = prevEl.textContent?.trim().split(/\s+/).filter(Boolean) ?? [];
+        if (prevWords.length > 1) {
+          pairs.push([prevWords[prevWords.length - 1], words[0]]);
+        }
+      }
+    }
+
+    target.innerHTML = originalHTML;
+
+    if (pairs.length > 0) {
+      let html = target.innerHTML;
+      for (const [prev, orphan] of pairs) {
+        const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        html = html.replace(
+          new RegExp(`(${esc(prev)})\\s+(${esc(orphan)})`),
+          `$1${NBSP}$2`
+        );
+      }
+      target.innerHTML = html;
+    }
+  }
+
   function initReveal() {
     const containers = document.querySelectorAll(".text-reveal-container");
 
@@ -123,6 +157,11 @@ const paddingValue = title ? "0.15em" : "0.5em";
       const { delay, color, stagger, duration, align, animate } = (
         container as HTMLElement
       ).dataset;
+
+      // Save original HTML before any SplitText/DOM modifications so cleanupReveal can restore it
+      originalHTMLMap.set(target as HTMLElement, (target as HTMLElement).innerHTML);
+
+      fixOrphans(target);
 
       const split = new SplitText(target, {
         type: "lines",
@@ -191,6 +230,33 @@ const paddingValue = title ? "0.15em" : "0.5em";
     });
   }
 
+  // originalHTML saved per target before any SplitText/DOM modifications
+  const originalHTMLMap = new WeakMap<HTMLElement, string>();
+
+  function cleanupReveal() {
+    document.querySelectorAll<HTMLElement>(".reveal-content.is-ready").forEach((target) => {
+      gsap.killTweensOf(target.querySelectorAll(".split-line, .block-revealer"));
+      const saved = originalHTMLMap.get(target);
+      if (saved != null) target.innerHTML = saved;
+      target.classList.remove("is-ready");
+      originalHTMLMap.delete(target);
+    });
+  }
+
+  // Debounced resize — re-measure SplitText line breaks after layout change
+  let resizeTimer: ReturnType<typeof setTimeout>;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      cleanupReveal();
+      requestAnimationFrame(initReveal);
+    }, 200);
+  });
+
+  // Cleanup before DOM swap so GSAP doesn't reference stale nodes
+  document.addEventListener("astro:before-swap", cleanupReveal);
+  // Wait one frame after swap so layout/fonts are ready before SplitText measures
+  document.addEventListener("astro:after-swap", () => requestAnimationFrame(initReveal));
+
   initReveal();
-  document.addEventListener("astro:after-swap", initReveal);
 </script>

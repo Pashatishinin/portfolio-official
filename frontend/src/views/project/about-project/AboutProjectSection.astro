@@ -5,43 +5,76 @@ interface Props {
   role?: string[];
   tools?: string[];
   year?: string;
+  info?: string;
 }
 
-const { role = [], tools = [], year } = Astro.props;
+const { role = [], tools = [], year, info } = Astro.props;
 ---
 
 <section
-  class="px-4 sm:px-16 py-8 grid gap-4 sm:gap-0 grid-cols-1 sm:grid-cols-3"
+  class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16"
 >
-  <div class="flex flex-col">
-    <h1 class="text-sm">Role</h1><div>
-      {
-        role.map((item) => (
-          <p>
-            <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
-          </p>
-        ))
-      }
+  <div
+    class="grid
+    gap-4
+    sm:gap-0
+    grid-cols-1
+    sm:grid-cols-3
+    w-full"
+  >
+    <div class="flex flex-col">
+      <h1 class="text-sm">Role</h1><div>
+        {
+          role.map((item) => (
+            <p>
+              <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
+            </p>
+          ))
+        }
+      </div>
+    </div>
+    <div class="flex flex-col items-start sm:items-center">
+      <h1 class="text-sm">Tools</h1><div
+        class="flex flex-col sm:flex-wrap sm:flex-row justify-start sm:justify-center"
+      >
+        {
+          tools.map((item) => (
+            <p class="mx-0 sm:mx-2">
+              <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
+            </p>
+          ))
+        }
+      </div>
+    </div>
+    <div class="flex flex-col items-start sm:items-end">
+      <h1 class="text-sm">Year</h1><div class="flex flex-wrap">
+        <p>
+          <TextEffectLine blockColor="#1d1d1d">{year}</TextEffectLine>
+        </p>
+      </div>
     </div>
   </div>
-  <div class="flex flex-col items-start sm:items-center">
-    <h1 class="text-sm">Tools</h1><div
-      class="flex flex-col sm:flex-wrap justify-start sm:justify-center"
-    >
-      {
-        tools.map((item) => (
-          <p class="mx-0 sm:mx-2">
-            <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
-          </p>
-        ))
-      }
-    </div>
-  </div>
-  <div class="flex flex-col items-start sm:items-end">
-    <h1 class="text-sm">Year</h1><div class="flex flex-wrap">
-      <p>
-        <TextEffectLine blockColor="#1d1d1d">{year}</TextEffectLine>
-      </p>
-    </div>
+
+  <div class="max-w-200 about-info-text">
+    <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
+      <TextEffectLine mixBlend align="center" blockColor="#141314">
+        {info}
+      </TextEffectLine>
+    </span>
   </div>
 </section>
+
+<script>
+  function updateInfoAlign() {
+    const container = document.querySelector<HTMLElement>(
+      ".about-info-text .text-reveal-container"
+    );
+    if (!container) return;
+    const align: "center" | "right" = window.innerWidth < 640 ? "right" : "center";
+    container.dataset.align = align;
+  }
+
+  updateInfoAlign();
+  window.addEventListener("resize", updateInfoAlign);
+  document.addEventListener("astro:after-swap", updateInfoAlign);
+</script>

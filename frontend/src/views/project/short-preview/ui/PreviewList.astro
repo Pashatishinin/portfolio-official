@@ -1,0 +1,129 @@
+---
+interface VideoItem {
+    src: string;
+    poster: string;
+}
+interface Props {
+    listVideo?: VideoItem[];
+}
+
+const { listVideo = [] } = Astro.props;
+---
+
+<section class="preview-section">
+    <div class="flex flex-col gap-2 spotlight-videos">
+        {
+            listVideo.map((video) => (
+                <div class="preview-video-item">
+                    <video
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        poster={video.poster}
+                        class="video-blur w-full h-full object-cover"
+                    >
+                        <source src={video.src} type="video/mp4" />
+                    </video>
+                </div>
+            ))
+        }
+    </div>
+</section>
+
+<style>
+    .preview-section {
+        overflow: hidden;
+    }
+
+    .preview-video-item {
+        width: 40vw;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        .preview-video-item {
+            width: 80vw;
+        }
+    }
+</style>
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const CONFIG = {
+        waves: {
+            base:   { amp: 0.06, freq: 1.0, speed: 1.0, phase: 5.0  },
+            flow:   { amp: 0.08, freq: 5.0, speed: 5.0, phase: 10.0 },
+            detail: { amp: 0.06, freq: 5.0, speed: 1.5, phase: 2.5  },
+        },
+        clipMax: 12,
+        clipPower: 2,
+    };
+
+    let triggers: ScrollTrigger[] = [];
+
+    function setupSlider() {
+        const items = gsap.utils.toArray<HTMLElement>(".preview-video-item");
+        const total = items.length;
+        if (!total) return;
+
+        items.forEach((item, index) => {
+            const ni = total > 1 ? index / (total - 1) : 0;
+
+            triggers.push(
+                ScrollTrigger.create({
+                    trigger: item,
+                    start: "top bottom",
+                    end: "bottom top",
+                    onUpdate: ({ progress }) => {
+                        const { base, flow, detail } = CONFIG.waves;
+                        const vw = window.innerWidth;
+
+                        // All waves symmetric around 0 — no drift bias
+                        const baseWave = Math.sin(
+                            ni * base.freq + (1 - progress) * base.speed + base.phase,
+                        );
+                        const flowWave = Math.sin(
+                            ni * flow.freq + flow.phase + progress * flow.speed,
+                        );
+                        const detailWave = Math.sin(
+                            ni * detail.freq + detail.phase + progress * detail.speed,
+                        );
+
+                        // Pure center + symmetric wave offset
+                        const translateX =
+                            (vw - item.offsetWidth) / 2 +
+                            baseWave * vw * base.amp +
+                            flowWave * vw * flow.amp +
+                            detailWave * vw * detail.amp;
+
+                        const centerOffset = Math.abs(progress - 0.5) * 2;
+                        const clipAmount =
+                            centerOffset ** CONFIG.clipPower * CONFIG.clipMax;
+
+                        item.style.translate = `${translateX}px`;
+                        item.style.clipPath = `inset(0 ${clipAmount}% 0 ${clipAmount}%)`;
+                    },
+                }),
+            );
+        });
+    }
+
+    setupSlider();
+
+    document.addEventListener("astro:before-swap", () => {
+        triggers.forEach((t) => t.kill());
+        triggers = [];
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+        triggers = [];
+        setupSlider();
+    });
+</script>

@@ -3,13 +3,15 @@ interface Props {
   award: string;
   result: string;
   year?: string;
+  img?: string;
 }
 
-const { award, result, year } = Astro.props;
+const { award, result, year, img } = Astro.props;
 ---
 
 <div
-  class="achievement-row grid grid-cols-2 sm:grid-cols-3 py-2 sm:py-4 lg:py-8 border-b border-main/10 items-start sm:items-center hover:bg-main/5 transition-colors group gap-y-2 gap-x-4 sm:gap-0"
+  class="achievement-row grid grid-cols-2 sm:grid-cols-3 md:px-8 py-2 sm:py-4 lg:py-8 border-b border-main/20 items-start sm:items-center hover:bg-main/20 transition-colors group gap-y-2 gap-x-4 sm:gap-0"
+  data-achievement-img={img}
 >
   <p
     class="col-span-2 sm:col-span-1 text-left sm:text-right font-mono text-sm opacity-50 sm:opacity-100 order-1 sm:order-3"

@@ -3,19 +3,24 @@ import Layout from "../layouts/Layout.astro";
 import FooterSection from "../views/footer/FooterSection.astro";
 import HeaderSection from "../views/header/HeaderSection.astro";
 import {
-  HeroSection,
-  PreviewSection,
   AchievementSection,
+  HeroSection,
+  MyWorks,
+  PreviewSection,
   SelectedWorksSection,
 } from "../views/home";
+import AboutSection from "../views/home/about/AboutSection.astro";
+import ServiceSection from "../views/home/service/ServiceSection.astro";
 ---
 
 <Layout>
   <HeaderSection />
   <HeroSection />
-  <PreviewSection />
+  <!-- <PreviewSection /> -->
 
   <SelectedWorksSection />
+  <AboutSection />
   <AchievementSection />
+  <!-- <ServiceSection /> -->
   <FooterSection />
 </Layout>

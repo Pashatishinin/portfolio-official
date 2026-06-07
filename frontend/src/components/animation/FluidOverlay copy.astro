@@ -1,0 +1,307 @@
+---
+
+---
+
+<canvas class="fluid-overlay-canvas"></canvas>
+
+<script>
+  import * as THREE from "three";
+
+  const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const fluidShader = `
+    uniform float iTime;
+    uniform vec2 iResolution;
+    uniform vec4 iMouse;
+    uniform int iFrame;
+    uniform sampler2D iPreviousFrame;
+    uniform float uBrushSize;
+    uniform float uBrushStrength;
+    uniform float uFluidDecay;
+    uniform float uTrailLength;
+    varying vec2 vUv;
+
+    vec2 ur, U;
+    float ln(vec2 p, vec2 a, vec2 b) {
+        return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));
+    }
+    vec4 t(vec2 v, int a, int b) {
+        return texture2D(iPreviousFrame, fract((v+vec2(float(a),float(b)))/ur));
+    }
+    vec4 t(vec2 v) {
+        return texture2D(iPreviousFrame, fract(v/ur));
+    }
+    float area(vec2 a, vec2 b, vec2 c) {
+        float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);
+        return sqrt(s*(s-A)*(s-B)*(s-C));
+    }
+
+    void main() {
+        U = vUv * iResolution;
+        ur = iResolution.xy;
+        if (iFrame < 1) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        } else {
+            vec2 v = U, A = v + vec2(1,1), B = v + vec2(1,-1), C = v + vec2(-1,1), D = v + vec2(-1,-1);
+            for (int i = 0; i < 8; i++) {
+                v -= t(v).xy; A -= t(A).xy; B -= t(B).xy; C -= t(C).xy; D -= t(D).xy;
+            }
+            vec4 me = t(v);
+            vec4 n = t(v, 0, 1), e = t(v, 1, 0), s = t(v, 0, -1), w = t(v, -1, 0);
+            vec4 ne = .25*(n+e+s+w);
+            me = mix(t(v), ne, vec4(0.15,0.15,0.95,0.));
+            me.z = me.z - 0.01*((area(A,B,C)+area(B,C,D))-4.);
+            vec4 pr = vec4(e.z,w.z,n.z,s.z);
+            me.xy = me.xy + 100.*vec2(pr.x-pr.y, pr.z-pr.w)/ur;
+            me.xy *= uFluidDecay;
+            me.z *= uTrailLength;
+            if (iMouse.z > 0.0) {
+                vec2 mousePos = iMouse.xy;
+                vec2 mousePrev = iMouse.zw;
+                float q = ln(U, mousePos, mousePrev);
+                vec2 m = mousePos - mousePrev;
+                float l = length(m);
+                if (l > 0.0) m = min(l, 10.0) * m / l;
+                float brushSizeFactor = 1e-4 / uBrushSize;
+                float strengthFactor = 0.03 * uBrushStrength;
+                float falloff = pow(exp(-brushSizeFactor*q*q*q), 0.5);
+                me.xyw += strengthFactor * falloff * vec3(m, 10.0);
+            }
+            gl_FragColor = clamp(me, -0.4, 0.4);
+        }
+    }
+  `;
+
+  const overlayDisplayShader = `
+    uniform float iTime;
+    uniform vec2 iResolution;
+    uniform sampler2D iFluid;
+    uniform float uDistortionAmount;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    uniform vec3 uColor3;
+    uniform vec3 uColor4;
+    uniform float uColorIntensity;
+    uniform float uSoftness;
+    varying vec2 vUv;
+
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
+    }
+
+    void main() {
+      vec2 fragCoord = vUv * iResolution;
+      vec4 fluid = texture2D(iFluid, vUv);
+      vec2 fluidVel = fluid.xy;
+      float mr = min(iResolution.x, iResolution.y);
+      vec2 uv = (fragCoord * 2.0 - iResolution.xy) / mr;
+      uv += fluidVel * (0.5 * uDistortionAmount);
+      float d = -iTime * 0.5;
+      float a = 0.0;
+      for (float i = 0.0; i < 8.0; ++i) {
+        a += cos(i - d - a * uv.x);
+        d += sin(uv.y * i + a);
+      }
+      d += iTime * 0.5;
+      float mixer1 = mix(cos(uv.x * d) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      float mixer2 = mix(cos(uv.y * a) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      float mixer3 = mix(sin(d + a) * 0.5 + 0.5, 0.5, clamp(uSoftness * 0.1, 0.0, 0.9));
+      vec3 col = mix(uColor1, uColor2, mixer1);
+      col = mix(col, uColor3, mixer2);
+      col = mix(col, uColor4, mixer3 * 0.4);
+      col *= uColorIntensity;
+      float n = hash(vUv + fract(iTime));
+      col += (n - 0.9) * 0.15;
+
+      float activity = length(fluidVel) * 6.0;
+      float alpha = smoothstep(0.005, 0.2, activity) * 0.9;
+
+      gl_FragColor = vec4(col, alpha);
+    }
+  `;
+
+  function initFluidOverlays() {
+    const canvases = document.querySelectorAll<HTMLCanvasElement>(
+      ".fluid-overlay-canvas:not([data-fluid-init])",
+    );
+
+    canvases.forEach((canvas) => {
+      canvas.dataset.fluidInit = "true";
+      const parent = canvas.parentElement!;
+
+      let width = Math.max(parent.offsetWidth, 1);
+      let height = Math.max(parent.offsetHeight, 1);
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+      renderer.setClearColor(0x000000, 0);
+      renderer.setSize(width, height);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      const rtParams = {
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
+        type: THREE.FloatType,
+      };
+      let bufferA = new THREE.WebGLRenderTarget(width, height, rtParams);
+      let bufferB = new THREE.WebGLRenderTarget(width, height, rtParams);
+
+      const mouse = new THREE.Vector4(-1, -1, -1, -1);
+
+      const fluidMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          iTime: { value: 0 },
+          iResolution: { value: new THREE.Vector2(width, height) },
+          iMouse: { value: mouse },
+          iFrame: { value: 0 },
+          iPreviousFrame: { value: null },
+          uBrushSize: { value: 0.5 },
+          uBrushStrength: { value: 1.5 },
+          uFluidDecay: { value: 0.98 },
+          uTrailLength: { value: 0.95 },
+        },
+        vertexShader,
+        fragmentShader: fluidShader,
+      });
+
+      const displayMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          iTime: { value: 0 },
+          iResolution: { value: new THREE.Vector2(width, height) },
+          iFluid: { value: null },
+          uDistortionAmount: { value: 1.0 },
+          uColor1: { value: new THREE.Color(0xffffff) },
+          uColor2: { value: new THREE.Color(0xf5f5f7) },
+          uColor3: { value: new THREE.Color(0xfffaf0) },
+          uColor4: { value: new THREE.Color(0xf0f4f8) },
+          uColorIntensity: { value: 1.0 },
+          uSoftness: { value: 0.5 },
+        },
+        vertexShader,
+        fragmentShader: overlayDisplayShader,
+        transparent: true,
+      });
+
+      const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), fluidMaterial);
+      scene.add(quad);
+
+      let frame = 0;
+      let prevHoverX = -1;
+      let prevHoverY = -1;
+      let wasActive = false;
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const active = parseFloat(getComputedStyle(parent).opacity) > 0.8;
+        if (!active) {
+          if (wasActive) {
+            renderer.setRenderTarget(null);
+            renderer.clear();
+            mouse.z = -1;
+            prevHoverX = -1;
+            prevHoverY = -1;
+            frame = 0;
+          }
+          wasActive = false;
+          return;
+        }
+        wasActive = true;
+
+        const t = performance.now() * 0.001;
+
+        quad.material = fluidMaterial;
+        fluidMaterial.uniforms.iPreviousFrame.value = bufferB.texture;
+        fluidMaterial.uniforms.iFrame.value = frame;
+        fluidMaterial.uniforms.iTime.value = t;
+
+        renderer.setRenderTarget(bufferA);
+        renderer.render(scene, camera);
+
+        quad.material = displayMaterial;
+        displayMaterial.uniforms.iFluid.value = bufferA.texture;
+        displayMaterial.uniforms.iTime.value = t;
+
+        renderer.setRenderTarget(null);
+        renderer.render(scene, camera);
+
+        const temp = bufferA;
+        bufferA = bufferB;
+        bufferB = temp;
+        frame++;
+      }
+
+      animate();
+
+      // Use window-level listener + rect check because ancestor has pointer-events-none
+      window.addEventListener("pointermove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = rect.height - (e.clientY - rect.top);
+        const isOver = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
+
+        if (isOver) {
+          // Ensure z > 0 to satisfy shader brush condition; use prev position for velocity
+          mouse.z = prevHoverX >= 0 ? prevHoverX : Math.max(x, 1);
+          mouse.w = prevHoverY >= 0 ? prevHoverY : y;
+          mouse.x = x;
+          mouse.y = y;
+          prevHoverX = x;
+          prevHoverY = y;
+        } else {
+          mouse.z = -1;
+          prevHoverX = -1;
+          prevHoverY = -1;
+        }
+      });
+
+      const ro = new ResizeObserver(() => {
+        const newW = Math.max(parent.offsetWidth, 1);
+        const newH = Math.max(parent.offsetHeight, 1);
+        if (newW === width && newH === height) return;
+        width = newW;
+        height = newH;
+        canvas.width = width;
+        canvas.height = height;
+        renderer.setSize(width, height);
+        fluidMaterial.uniforms.iResolution.value.set(width, height);
+        displayMaterial.uniforms.iResolution.value.set(width, height);
+        bufferA.setSize(width, height);
+        bufferB.setSize(width, height);
+        frame = 0;
+      });
+      ro.observe(parent);
+    });
+  }
+
+  if (document.readyState === "complete") {
+    initFluidOverlays();
+  } else {
+    window.addEventListener("load", initFluidOverlays);
+  }
+
+  document.addEventListener("astro:after-swap", initFluidOverlays);
+</script>
+
+<style>
+  .fluid-overlay-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+</style>

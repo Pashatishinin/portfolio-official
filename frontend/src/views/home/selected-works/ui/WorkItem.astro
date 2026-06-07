@@ -1,8 +1,7 @@
 ---
-import { object } from "astro:schema";
-import { TextEffectLine, CtaButton } from "../../../../components";
-import { MuxPlayer } from "@mux/mux-player-astro";
 import { Image } from "astro:assets";
+import { MuxPlayer } from "@mux/mux-player-astro";
+import { TextEffectLine, CtaButton } from "../../../../components";
 
 interface Props {
   title: string;
@@ -49,15 +48,6 @@ const customPoster: string = (poster || imgSrc || "").toString();
         />
       )
     }
-    <!-- {
-      videoSrc ? (
-        <video autoplay muted loop playsinline poster={poster}>
-          <source src={videoSrc} type="video/mp4" />
-        </video>
-      ) : (
-        <img src={imgSrc} alt={title} loading="lazy" />
-      )
-    } -->
   </div>
 
   <div class="work-item-content">
@@ -85,18 +75,17 @@ const customPoster: string = (poster || imgSrc || "").toString();
   .media-content {
     height: 100% !important;
     width: auto !important;
-    min-width: 100%; /* Гарантирует, что если видео узкое, оно заполнит ширину */
-    object-fit: cover; /* Оставляет пропорции, заполняя контейнер */
+    min-width: 100%;
+    object-fit: cover;
     display: block;
   }
 
-  /* Специфично для Mux Player, чтобы убрать черные полосы внутри тега */
   mux-player {
     --controls: none;
     --media-object-fit: cover;
     --media-object-position: center;
     height: 100%;
-    aspect-ratio: 16 / 9; /* Задай примерное соотношение, чтобы браузер зарезервировал место */
+    aspect-ratio: 16 / 9;
   }
 
   .work-item {

@@ -1,0 +1,19 @@
+---
+import FluidOverlay from "../../../../components/animation/FluidOverlay.astro";
+
+interface Props {
+  playbackId: string;
+  poster?: string;
+  link?: string;
+}
+
+const { playbackId, poster = "/1.avif", link } = Astro.props;
+---
+
+<div
+  class="relative w-full aspect-video opacity-[0.5] transition-all duration-300 ease-in overflow-hidden"
+>
+  <a href={link} class="absolute inset-0 z-10 pointer-events-auto"></a>
+
+  <FluidOverlay image={poster} />
+</div>

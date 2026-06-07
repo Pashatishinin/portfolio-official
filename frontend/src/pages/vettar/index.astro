@@ -1,4 +1,10 @@
 ---
+import video1 from "../../assets/vettar/1.mp4";
+import video2 from "../../assets/vettar/2.mp4";
+import video3 from "../../assets/vettar/3.mp4";
+import video4 from "../../assets/vettar/4.mp4";
+import mainImg from "../../assets/vettar/vettar-main.jpg";
+
 import Layout from "../../layouts/Layout.astro";
 import FooterSection from "../../views/footer/FooterSection.astro";
 import HeaderSectionProject from "../../views/header/HeaderSectionProject.astro";
@@ -9,28 +15,23 @@ import {
   ShortPreviewSection,
 } from "../../views/project";
 
-import mainImg from "../../assets/vettar/main.jpg";
-
-import video1 from "../../assets/vettar/1.mp4";
-import video2 from "../../assets/vettar/2.mp4";
-import video3 from "../../assets/vettar/3.mp4";
-import video4 from "../../assets/vettar/4.mp4";
-
 const videos = [
-  { src: video1, poster: "/1.jpg" },
-  { src: video2, poster: "/1.jpg" },
-  { src: video3, poster: "/1.jpg" },
-  { src: video4, poster: "/1.jpg" },
+  { src: video1, poster: "/vettar-cover.jpg" },
+  { src: video2, poster: "/vettar-cover.jpg" },
+  { src: video3, poster: "/vettar-cover.jpg" },
+  { src: video4, poster: "/vettar-cover.jpg" },
 ];
 
 const role = ["Design", "Frontend Development", "CMS Architecture"];
 const tools = ["Next.js", "CMS Sanity", "Tailwind CSS", "GSAP", "Figma"];
+const info =
+  " Modernity, convenience, and trust are the three key principles I implemented in the new design of VETTAR. My goal was not just to update the interface, but to create an emotional connection with the user. I made the site more intuitive, added blocks about the company and products to emphasize the openness of the brand and inspire trust.";
 ---
 
 <Layout>
-  <HeaderSectionProject />
+  <HeaderSectionProject title="Vettar" />
   <HeroSection text="Vettar" img={mainImg} />
-  <AboutProjectSection role={role} tools={tools} year="2025" />
+  <AboutProjectSection role={role} tools={tools} year="2025" info={info} />
   <ShortPreviewSection listVideo={videos} />
   <NextProjectSection link="/8enjamin" />
   <FooterSection />

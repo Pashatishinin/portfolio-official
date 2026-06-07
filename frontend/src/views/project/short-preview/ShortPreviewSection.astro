@@ -1,5 +1,6 @@
 ---
 import { TextEffectLine } from "../../../components";
+import PreviewList from "./ui/PreviewList.astro";
 
 interface VideoItem {
   src: string;
@@ -13,36 +14,26 @@ interface Props {
 const { listVideo = [] } = Astro.props;
 ---
 
-<section
-  class="relative w-full flex flex-col gap-12 lg:gap-0 lg:flex-row lg:justify-between p-4 sm:p-16"
->
-  <div class="lg:sticky lg:top-16 h-fit">
-    <h1
-      class="font-accent italic text-[clamp(42px,5vw+1rem,90px)] text-main leading-[75%]"
-    >
-      <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
-    </h1>
-    <h1
-      class="text-[clamp(42px,5vw+1rem,90px)] font-bold uppercase text-main leading-[75%]"
-    >
-      <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
-    </h1>
+<section class="relative w-full px-4 sm:px-16 pt-8 max-w-480 mx-auto">
+  <!-- h-0 trick: sticky but takes no flow space — videos scroll over it -->
+  <div class="sticky top-0 h-50 sm:h-100 pointer-events-none z-0">
+    <div class="opacity-10">
+      <h1
+        class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[300px] leading-[65%] -tracking-widest"
+      >
+        <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
+      </h1>
+      <h1
+        class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[300px] leading-[65%] -tracking-widest"
+      >
+        <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
+      </h1>
+    </div>
   </div>
-  <div class="flex flex-col gap-1">
-    {
-      listVideo.map((video) => (
-        <video
-          autoplay
-          muted
-          loop
-          playsinline
-          poster={video.poster}
-          class="video-blur w-full aspect-video max-w-200 object-cover"
-        >
-          <source src={video.src} type="video/mp4" />
-        </video>
-      ))
-    }
+
+  <!-- Videos on top, provide scroll height -->
+  <div class="relative z-10 py-24">
+    <PreviewList listVideo={listVideo} />
   </div>
 </section>
 

@@ -6,19 +6,19 @@ const { text, img } = Astro.props;
 ---
 
 <section>
-  <div class="back z-10 fixed top-0 left-0 bg-main h-screen w-screen"></div>
-  <div class="flex flex-col text-main">
-    <div class="p-4 sm:p-16 pt-32 text-center">
+  <!-- <div class="back z-10 fixed top-0 left-0 bg-main h-screen w-screen"></div> -->
+  <div class="flex flex-col text-main h-screen">
+    <!-- <div class="p-4 sm:p-16 pt-32 text-center">
       <h1 class="text-[clamp(48px,11vw,180px)] -tracking-widest leading-[80%]">
         <TextEffect delay={0.4} wait>{text}</TextEffect>
       </h1>
-    </div>
+    </div> -->
 
     <div class="h-full image">
       <Image
         src={img}
         alt="Описание"
-        width={1920}
+        width={2400}
         loading="eager"
         fetchpriority="high"
       />
@@ -27,10 +27,15 @@ const { text, img } = Astro.props;
 </section>
 
 <style>
-  image {
-    height: 100% !important;
+  .image {
+    overflow: hidden;
+  }
+
+  .image img {
+    height: 100%;
     width: 100%;
     object-fit: cover;
+    display: block;
   }
 
   p {
@@ -41,33 +46,25 @@ const { text, img } = Astro.props;
 
 <script>
   import gsap from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-  gsap.registerPlugin(ScrollTrigger);
+  const animateImage = () => {
+    const img = document.querySelector<HTMLElement>(".image img");
+    if (!img) return;
 
-  const globalDelay = (window as any).HERO_DELAY;
-  const finalDelay = globalDelay - 1.2;
-
-  const initBackground = () => {
-    gsap.to(".back", {
-      yPercent: -150,
-      skewY: -15,
-      duration: 1.2,
-      ease: "expo.inOut",
-      delay: 0.1,
+    gsap.killTweensOf(img);
+    gsap.set(img, {
+      scale: 1.5,
+      rotation: 4,
+      transformOrigin: "center center",
+    });
+    gsap.to(img, {
+      scale: 1,
+      rotation: 0,
+      duration: 1.4,
+      ease: "expo.out",
+      clearProps: "transform",
     });
   };
 
-  const moveImage = () => {
-    gsap.from(".image", {
-      yPercent: 10,
-      duration: 3,
-      ease: "expo.inOut",
-      delay: finalDelay,
-    });
-  };
-  initBackground();
-  moveImage();
-
-  document.addEventListener("astro:page-load", initBackground);
+  document.addEventListener("astro:page-load", animateImage);
 </script>

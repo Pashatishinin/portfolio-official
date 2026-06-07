@@ -37,16 +37,9 @@ const projects = [
   import gsap from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { SplitText } from "gsap/SplitText";
-  //   import Lenis from "lenis";
 
   const initWork = () => {
     gsap.registerPlugin(ScrollTrigger, SplitText);
-
-    // const lenis = new Lenis();
-    // lenis.on("scroll", ScrollTrigger.update);
-    // gsap.ticker.add((time) => {
-    //   lenis.raf(time * 1000);
-    // });
     gsap.ticker.lagSmoothing(0);
 
     ScrollTrigger.getAll().forEach((st) => {
@@ -82,7 +75,7 @@ const projects = [
           },
         },
       );
-      const split = SplitText.create(nameH1, {
+      SplitText.create(nameH1, {
         type: "chars",
         mask: "chars",
       });
@@ -123,5 +116,10 @@ const projects = [
     });
     ScrollTrigger.refresh();
   };
-  document.addEventListener("astro:page-load", initWork);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initWork);
+  } else {
+    initWork();
+  }
+  document.addEventListener("astro:after-swap", initWork);
 </script>

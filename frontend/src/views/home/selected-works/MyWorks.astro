@@ -1,0 +1,43 @@
+---
+import { projects } from "../../../shared/data/projects.data";
+import WorkPreviewItem from "./ui/WorkPreviewItem.astro";
+---
+
+<section>
+  <div class="spotlight relative h-svh max-w-[1920px] mx-auto w-full p-4 sm:p-16 overflow-hidden z-10 pointer-events-none">
+
+    <div class="project-index absolute top-20 left-4 sm:static">
+      <h1 class="uppercase text-[clamp(1.5rem,5vw,7rem)] leading-[100%] font-medium">
+        <span class="text-[0.6em]">[ </span>
+        <span class="current-index">01</span>
+        <span class="text-[0.6em]">/0{projects.length} ]</span>
+      </h1>
+    </div>
+
+    <div class="project-images absolute top-0 left-[50%] translate-x-[-50%] w-[90%] sm:w-[65%] lg:w-[45%] py-[50svh] flex flex-col gap-[15svh] sm:gap-[20svh] lg:gap-2">
+      {projects.map((p) => (
+        <WorkPreviewItem playbackId={p.playbackId} link={p.link} poster={p.img} />
+      ))}
+    </div>
+
+    <div class="project-names absolute right-4 sm:right-8 bottom-4 sm:bottom-8 flex flex-col items-end">
+      {projects.map((p) => (
+        <p class="project-name uppercase text-[1.1rem] sm:text-[1.6rem] lg:text-[2.0rem] leading-[125%] font-medium text-[#4a4a4a] transition-all duration-300 ease-in">
+          {p.name}
+        </p>
+      ))}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .spotlight { isolation: isolate; }
+  h1 { color: #242424 !important; }
+  .project-index h1, .project-name, .project-images { will-change: transform; }
+</style>
+
+<script>
+  import { setupMyWorks } from "./myWorksAnimation";
+  setupMyWorks();
+</script>

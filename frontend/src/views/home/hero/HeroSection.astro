@@ -2,20 +2,27 @@
 import { Circle, TextEffect } from "../../../components";
 ---
 
-<section id="hero" class="relative z-10 h-full max-h-250 min-h-100vh w-full">
-  <div class="back fixed top-0 left-0 bg-main h-screen w-screen z-20"></div>
+<section
+  id="hero"
+  class="relative z-10 h-full max-h-250 min-h-[100vh] w-full max-w-[1920px] mx-auto"
+>
+  <!-- <div
+    class="back fixed top-0 left-0 bg-[#1d1d1d] h-screen w-screen z-20"
+    style="will-change: transform;"
+  >
+  </div> -->
 
   <div
-    class="px-4 sm:px-16 py-16 sm:py-32 flex flex-col justify-between h-full text-background"
+    class="px-4 sm:px-16 py-16 sm:py-32 2xl:py-54 flex flex-col justify-between min-h-screen h-full text-background"
   >
     <div>
       <h1
-        class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,150px)] leading-[75%]"
+        class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
       >
         <TextEffect delay={0.2} wait>Creative </TextEffect>
       </h1>
       <h1
-        class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,150px)] leading-[75%]"
+        class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
       >
         <TextEffect delay={0.2} wait>Technologist </TextEffect>
       </h1>
@@ -23,12 +30,12 @@ import { Circle, TextEffect } from "../../../components";
 
     <div>
       <h1
-        class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,150px)] leading-[75%]"
+        class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
       >
         <TextEffect delay={0.2} wait>Pavlo</TextEffect>
       </h1>
       <h1
-        class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,150px)] leading-[75%]"
+        class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
       >
         <TextEffect delay={0.2} wait>Tishynin</TextEffect>
       </h1>
@@ -53,10 +60,10 @@ import { Circle, TextEffect } from "../../../components";
 
     gsap.to(".back", {
       yPercent: -150,
-      skewY: -15,
-      duration: 1.2,
-      ease: "expo.inOut",
-      delay: 0.1,
+      skewY: -5,
+      duration: 1.5,
+      ease: "power4.out",
+      delay: 0.3,
     });
 
     // Анимация круга

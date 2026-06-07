@@ -1,25 +1,103 @@
 ---
-import { TextEffectLine } from "../../../components";
-import WorkList from "./ui/WorkList.astro";
+import PreviewSection from "../preview/PreviewSection.astro";
+import MyWorks from "./MyWorks.astro";
 ---
 
 <section id="works" class="relative flex flex-col w-full">
-  <div class="p-4 sm:p-16">
-    <div>
-      <h2
-        class="font-accent text-left font-black -tracking-widest text-[#1d1d1d] text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
-      >
-        <TextEffectLine align="left" blockColor="#242424"
-          >Selected</TextEffectLine
+  <div class="works-reveal-container relative w-full h-svh">
+    <div class="absolute inset-0 z-0 overflow-hidden min-h-screen">
+      <PreviewSection />
+    </div>
+
+    <div
+      class="selected-works-back-scroll absolute inset-0 z-20 overflow-hidden bg-[#faf6f0]"
+    >
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div
+          class="p-4 sm:p-16 flex flex-col items-center justify-center w-full text-center"
         >
-      </h2>
-      <h2
-        class="text-left font-black -tracking-widest text-[#1d1d1d] text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
-      >
-        <TextEffectLine align="left" blockColor="#242424">Works</TextEffectLine>
-      </h2>
+          <div class="flex flex-col items-center gap-2">
+            <h2
+              class="selected-works-title font-accent text-center font-black -tracking-widest text-[#1d1d1d] text-[clamp(60px,25vw,300px)] leading-[70%]"
+            >
+              Selected
+            </h2>
+            <h2
+              class="selected-works-title text-center font-black -tracking-widest text-[#1d1d1d] text-[clamp(60px,25vw,300px)] leading-[70%]"
+            >
+              Works
+            </h2>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <WorkList />
+  <div class="relative z-20 bg-[#faf6f0]">
+    <MyWorks />
+  </div>
 </section>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  let revealTl: gsap.core.Timeline | null = null;
+
+  const initWorksReveal = () => {
+    const revealContainer = document.querySelector(
+      ".works-reveal-container",
+    ) as HTMLElement | null;
+    const backScroll = document.querySelector(
+      ".selected-works-back-scroll",
+    ) as HTMLElement | null;
+    const titleTriggers = document.querySelectorAll(".selected-works-title");
+
+    if (!revealContainer || !backScroll) return;
+
+    revealTl?.scrollTrigger?.kill();
+    revealTl?.kill();
+    revealTl = null;
+
+    // Force initial state immediately — prevents flash of revealed state on navigation
+    gsap.set(backScroll, { clipPath: "inset(50% 0% 50% 0%)" });
+    gsap.set(titleTriggers, { opacity: 0 });
+
+    revealTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: revealContainer,
+        start: "top top",
+        end: "+=1000",
+        scrub: true,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        // markers: true,
+        // ensures pin height is calculated before MyWorks ScrollTrigger
+        refreshPriority: 1,
+      },
+    });
+
+    revealTl
+      .fromTo(
+        backScroll,
+        { clipPath: "inset(50% 0% 50% 0%)" },
+        { clipPath: "inset(0% 0% 0% 0%)", ease: "none" },
+        0,
+      )
+      .fromTo(titleTriggers, { opacity: 0 }, { opacity: 1, ease: "none" }, 0);
+
+    // После создания триггера принудительно обновляем глобальную карту скролла
+    ScrollTrigger.refresh();
+  };
+
+  document.addEventListener("astro:page-load", initWorksReveal);
+  document.addEventListener("astro:before-preparation", () => {
+    revealTl?.scrollTrigger?.kill();
+    revealTl?.kill();
+    revealTl = null;
+  });
+</script>

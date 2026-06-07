@@ -1,14 +1,18 @@
 ---
-import { Loop } from "three/src/nodes/utils/LoopNode.js";
 import Logo from "../../components/ui/buttons/Logo.astro";
-import Link from "../../components/ui/buttons/Link.astro";
-import CtaButton from "../../components/ui/buttons/CtaButton.astro";
+
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
 ---
 
 <section
-  class="header fixed z-999 flex w-screen justify-between px-4 sm:px-16 py-8"
+  class="header fixed inset-x-0 z-999 flex justify-between px-4 sm:px-16 py-8 max-w-480 mx-auto"
 >
   <Logo />
+  {title && <span class="project-title uppercase font-medium">{title}</span>}
 </section>
 
 <style>
@@ -16,11 +20,12 @@ import CtaButton from "../../components/ui/buttons/CtaButton.astro";
     mix-blend-mode: difference;
     color: white;
   }
-  .italic {
-    font-family: "Satoshi-Italica";
-  }
 </style>
 
 <script>
   import gsap from "gsap";
+
+  document.addEventListener("astro:page-load", () => {
+    gsap.from(".header", { y: "-150%", duration: 1.2, ease: "expo.out" });
+  });
 </script>

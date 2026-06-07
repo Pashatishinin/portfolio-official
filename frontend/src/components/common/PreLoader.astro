@@ -1,5 +1,6 @@
 ---
 import { TextEffect } from "../../components";
+
 const images = [
   "/preloader/001.avif",
   "/preloader/002.avif",
@@ -11,12 +12,22 @@ const images = [
 ---
 
 <section
-  class="fixed top-0 left-0 preloader z-9999 w-screen h-screen bg-main flex flex-col justify-center items-center"
+  class="fixed top-0 left-0 preloader z-9999 w-screen h-screen bg-[#131313] flex flex-col justify-center items-center"
 >
   <div
     class="absolute w-[280px] h-[160px] lg:w-[350px] lg:h-[200px] flex justify-center items-center"
   >
-    <div class="relative w-full h-full overflow-hidden">
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      poster="/Frame.jpg"
+      class="video-blur h-full object-cover opacity-0"
+    >
+      <source src="/preloader.mp4" type="video/mp4" />
+    </video>
+    <!-- <div class="relative w-full h-full overflow-hidden">
       {
         images.map((src) => (
           <div class="img-wrapper absolute bottom-0 left-0 w-full h-0 overflow-hidden scale-50">
@@ -29,7 +40,7 @@ const images = [
           </div>
         ))
       }
-    </div>
+    </div> -->
   </div>
   <div
     class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[300px] lg:gap-[400px] px-6"
@@ -123,6 +134,7 @@ const images = [
     }
 
     if (isFirstLoad || isReload) {
+      gsap.to(".video-blur", { opacity: 1, duration: 0.6, delay: 1.4 });
       initBgPreloader();
       initGapAnimation();
       initPreloaderImages();
