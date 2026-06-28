@@ -1,9 +1,12 @@
 ---
+import { Object3D } from "../components";
 import Layout from "../layouts/Layout.astro";
 import FooterSection from "../views/footer/FooterSection.astro";
 import HeaderSection from "../views/header/HeaderSection.astro";
 import {
   AchievementSection,
+  AllProjectsCta,
+  AllProjectsSection,
   HeroSection,
   MyWorks,
   PreviewSection,
@@ -14,11 +17,13 @@ import ServiceSection from "../views/home/service/ServiceSection.astro";
 ---
 
 <Layout>
+  <!-- <Object3D /> -->
   <HeaderSection />
   <HeroSection />
   <!-- <PreviewSection /> -->
 
   <SelectedWorksSection />
+  <AllProjectsSection />
   <AboutSection />
   <AchievementSection />
   <!-- <ServiceSection /> -->

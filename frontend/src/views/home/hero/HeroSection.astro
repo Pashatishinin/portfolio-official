@@ -1,16 +1,12 @@
 ---
-import { Circle, TextEffect } from "../../../components";
+import { Object3D, TextEffect } from "../../../components";
 ---
 
 <section
   id="hero"
   class="relative z-10 h-full max-h-250 min-h-[100vh] w-full max-w-[1920px] mx-auto"
 >
-  <!-- <div
-    class="back fixed top-0 left-0 bg-[#1d1d1d] h-screen w-screen z-20"
-    style="will-change: transform;"
-  >
-  </div> -->
+  <Object3D />
 
   <div
     class="px-4 sm:px-16 py-16 sm:py-32 2xl:py-54 flex flex-col justify-between min-h-screen h-full text-background"
@@ -41,10 +37,10 @@ import { Circle, TextEffect } from "../../../components";
       </h1>
     </div>
   </div>
+
   <div
     class="moveCircle absolute bottom-[50%] sm:bottom-[15%] right-[50%] sm:right-[15%] translate-1/2 sm:translate-0"
   >
-    <Circle />
   </div>
 </section>
 
@@ -58,24 +54,44 @@ import { Circle, TextEffect } from "../../../components";
     const oldTrigger = ScrollTrigger.getById("hero-scroll");
     if (oldTrigger) oldTrigger.kill();
 
-    gsap.to(".back", {
-      yPercent: -150,
-      skewY: -5,
-      duration: 1.5,
-      ease: "power4.out",
-      delay: 0.3,
+    const oldJellyTrigger = ScrollTrigger.getById("jelly-scroll");
+    if (oldJellyTrigger) oldJellyTrigger.kill();
+
+    // 1. Инициализируем стартовую позицию в углу (теперь без конфликтов с CSS)
+    gsap.set("three-crystal", {
+      rotation: -45,
+      opacity: 0,
+      scale: 0.6,
+      // top: "auto",
+      // left: "auto",
+      bottom: "-10%",
+      right: "10%",
+      xPercent: 0,
+      yPercent: 0,
     });
 
-    // Анимация круга
-    let mm = gsap.matchMedia();
+    // 2. Интро-анимация (выплывание в рабочую позицию угла)
+    const introTl = gsap.timeline();
 
+    introTl.to("three-crystal", {
+      opacity: 1,
+      scale: 1,
+      bottom: "-10%",
+      right: "10%",
+      duration: 1.8,
+      ease: "power3.out",
+      delay: 4,
+    });
+
+    // 3. Анимация скролла
+    let mm = gsap.matchMedia();
     mm.add(
       {
         isDesktop: "(min-width: 640px)",
         isMobile: "(max-width: 639px)",
       },
       (context) => {
-        let { isDesktop, isMobile }: any = context.conditions;
+        let { isMobile }: any = context.conditions;
 
         gsap.to(".moveCircle", {
           y: isMobile ? 500 : 200,
@@ -85,6 +101,26 @@ import { Circle, TextEffect } from "../../../components";
             start: "top top",
             end: "bottom top",
             scrub: 1.5,
+          },
+        });
+
+        // Движение в центр
+        gsap.to("three-crystal", {
+          top: "50%",
+          left: "50%",
+          xPercent: -50,
+          yPercent: -50,
+          bottom: "auto",
+          right: "auto",
+          rotation: 0,
+          // Очищаем старые интро-параметры bottom/right во время работы скролла
+          clearProps: "bottom,right",
+          scrollTrigger: {
+            id: "jelly-scroll",
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.8,
           },
         });
       },

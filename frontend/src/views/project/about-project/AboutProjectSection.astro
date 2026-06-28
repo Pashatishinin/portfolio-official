@@ -12,7 +12,7 @@ const { role = [], tools = [], year, info } = Astro.props;
 ---
 
 <section
-  class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16"
+  class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16 bg-[#faf6f0]"
 >
   <div
     class="grid
@@ -67,10 +67,11 @@ const { role = [], tools = [], year, info } = Astro.props;
 <script>
   function updateInfoAlign() {
     const container = document.querySelector<HTMLElement>(
-      ".about-info-text .text-reveal-container"
+      ".about-info-text .text-reveal-container",
     );
     if (!container) return;
-    const align: "center" | "right" = window.innerWidth < 640 ? "right" : "center";
+    const align: "center" | "right" =
+      window.innerWidth < 640 ? "right" : "center";
     container.dataset.align = align;
   }
 

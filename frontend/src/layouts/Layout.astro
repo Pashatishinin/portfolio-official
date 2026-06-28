@@ -21,6 +21,7 @@ import { ClientRouter } from "astro:transitions";
   <body>
     <PreLoader />
     <!-- <PageTransition /> -->
+    <div id="page-overlay" transition:persist></div>
     <FluidScene transition:persist client:visible />
     <SmoothScroll />
     <slot />
@@ -48,8 +49,17 @@ import { ClientRouter } from "astro:transitions";
 
   ::view-transition-old(root) {
     animation: none;
-    opacity: 0;
     z-index: 1;
+  }
+
+  #page-overlay {
+    position: fixed;
+    inset: 0;
+    background: #faf6f0;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
   }
 
   ::view-transition-new(root) {
@@ -85,6 +95,9 @@ import { ClientRouter } from "astro:transitions";
   updateHeroDelay();
 
   document.addEventListener("astro:before-preparation", (ev) => {
+    const overlay = document.getElementById("page-overlay");
+    if (overlay) overlay.style.opacity = "1";
+
     if (ev.to.pathname === "/") {
       document.documentElement.style.setProperty("--vt-anim", "slide-up");
     }
@@ -97,5 +110,7 @@ import { ClientRouter } from "astro:transitions";
 
   document.addEventListener("astro:page-load", () => {
     document.documentElement.style.removeProperty("--vt-anim");
+    const overlay = document.getElementById("page-overlay");
+    if (overlay) overlay.style.opacity = "0";
   });
 </script>

@@ -7,9 +7,9 @@ import AchievementItem from "./ui/AchievementItem.astro";
 
 <section
   id="achievement"
-  class="relative w-full p-4 md:p-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-[1920px] mx-auto"
+  class="relative w-full p-4 md:p-16 grid grid-cols-1 gap-12 lg:gap-20 max-w-[1920px] mx-auto"
 >
-  <div class="lg:sticky lg:top-16 h-fit">
+  <!-- <div class="lg:sticky lg:top-16 h-fit">
     <h1 class="font-accent italic text-5xl md:text-6xl text-main leading-[75%]">
       <TextEffectLine mixBlend blockColor="var(--color-main)">My</TextEffectLine
       >
@@ -19,7 +19,7 @@ import AchievementItem from "./ui/AchievementItem.astro";
         >Achievement</TextEffectLine
       >
     </h1>
-  </div>
+  </div> -->
 
   <div class="flex flex-col w-full text-lg md:text-2xl text-main">
     {achievements.map((item) => <AchievementItem {...item} />)}

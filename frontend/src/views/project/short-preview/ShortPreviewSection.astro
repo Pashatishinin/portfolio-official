@@ -14,17 +14,19 @@ interface Props {
 const { listVideo = [] } = Astro.props;
 ---
 
-<section class="relative w-full px-4 sm:px-16 pt-8 max-w-480 mx-auto">
-  <!-- h-0 trick: sticky but takes no flow space — videos scroll over it -->
-  <div class="sticky top-0 h-50 sm:h-100 pointer-events-none z-0">
-    <div class="opacity-10">
+<section
+  id="short-preview"
+  class="relative w-full px-4 sm:px-16 pt-8 max-w-480 mx-auto bg-[#faf6f0]"
+>
+  <div class="absolute inset-0 pointer-events-none z-0">
+    <div class="sticky top-0 h-screen flex flex-col justify-center p-16">
       <h1
-        class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[300px] leading-[65%] -tracking-widest"
+        class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[64px] leading-[65%] -tracking-widest"
       >
         <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
       </h1>
       <h1
-        class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[300px] leading-[65%] -tracking-widest"
+        class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[100px] leading-[65%] -tracking-widest"
       >
         <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
       </h1>
@@ -80,10 +82,11 @@ const { listVideo = [] } = Astro.props;
       gsap.to(video, {
         filter: "blur(10px)",
         scrollTrigger: {
-          trigger: video,
+          trigger: "#short-preview",
           start: "bottom 20%",
           end: "bottom 0%",
           scrub: true,
+          // markers: true,
         },
       });
     });
@@ -112,6 +115,5 @@ const { listVideo = [] } = Astro.props;
     ScrollTrigger.refresh();
   };
 
-  window.addEventListener("load", initVideoBlur);
   document.addEventListener("astro:page-load", initVideoBlur);
 </script>

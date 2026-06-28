@@ -1,0 +1,96 @@
+---
+const count = "08";
+---
+
+<section
+    id="projects-cta"
+    class="relative w-full px-4 sm:px-16 max-w-[1920px] mx-auto py-8 sm:py-16 overflow-hidden"
+>
+    <div class="border-t border-current opacity-20 mb-8 sm:mb-12"></div>
+
+    <a
+        href="/projects"
+        class="cta-link group flex flex-col gap-4 sm:gap-6 cursor-pointer"
+    >
+        <div class="flex items-center justify-between">
+            <span
+                class="text-xs sm:text-sm uppercase tracking-[0.2em] opacity-40 font-medium"
+            >
+                {count} Projects
+            </span>
+            <span
+                class="text-xs sm:text-sm uppercase tracking-[0.2em] opacity-40 font-medium"
+            >
+                View All
+            </span>
+        </div>
+
+        <div class="relative overflow-hidden">
+            <h2
+                class="cta-title font-black font-accent -tracking-widest text-[clamp(72px,14vw,220px)] leading-[1] text-main"
+            >
+                Archive
+            </h2>
+            <div
+                class="cta-bg absolute inset-0 bg-main origin-bottom scale-y-0"
+            >
+            </div>
+        </div>
+
+        <div class="border-t border-current opacity-20"></div>
+    </a>
+</section>
+
+<style>
+    .cta-bg {
+        transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+    }
+
+    .cta-link:hover .cta-bg {
+        transform: scaleY(1);
+    }
+
+    .cta-title {
+        position: relative;
+        z-index: 1;
+        transition: color 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+        mix-blend-mode: difference;
+        color: #141314;
+    }
+
+    .cta-link:hover .cta-title {
+        color: #ffffff;
+    }
+</style>
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const init = () => {
+        const title = document.querySelector<HTMLElement>(
+            "#projects-cta .cta-title",
+        );
+        if (!title) return;
+
+        gsap.fromTo(
+            title,
+            { yPercent: 30, opacity: 0 },
+            {
+                yPercent: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: "#projects-cta",
+                    start: "top 85%",
+                    once: true,
+                },
+            },
+        );
+    };
+
+    document.addEventListener("astro:page-load", init);
+</script>

@@ -1,0 +1,230 @@
+<three-crystal>
+  <div class="three-container"></div>
+</three-crystal>
+<style>
+  three-crystal {
+    display: block !important;
+    width: 800px !important;
+    height: 800px !important;
+    position: fixed !important;
+    z-index: 99999 !important;
+    pointer-events: none !important;
+    transform-origin: center center;
+    opacity: 30% !important;
+  }
+  .three-container {
+    width: 100% !important;
+    height: 100% !important;
+  }
+</style>
+<script>
+  import * as THREE from "three";
+  import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+  class ThreeCrystal extends HTMLElement {
+    private renderer: THREE.WebGLRenderer | null = null;
+    private rafId: number | null = null;
+    private model: THREE.Group | null = null;
+    private mixer: THREE.AnimationMixer | null = null; // Миксер для встроенных анимаций
+    private clock = new THREE.Clock();
+
+    connectedCallback() {
+      const container = this.querySelector(".three-container");
+      if (!container) return;
+
+      this.renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setSize(800, 800);
+
+      this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 2.2;
+
+      container.appendChild(this.renderer.domElement);
+
+      const scene = new THREE.Scene();
+
+      const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+      pmremGenerator.compileEquirectangularShader();
+      scene.environment = pmremGenerator.fromScene(new THREE.Scene()).texture;
+
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+      camera.position.set(0, 0, 130.5);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 2.0));
+
+      const frontLight = new THREE.DirectionalLight(0xffffff, 4.0);
+      frontLight.position.set(3, 5, 3);
+      scene.add(frontLight);
+
+      const blueBackLight = new THREE.DirectionalLight(0x00aaff, 6.0);
+      blueBackLight.position.set(-5, -3, -5);
+      scene.add(blueBackLight);
+
+      const loader = new GLTFLoader();
+      loader.load(
+        "/object/scene.gltf",
+        (gltf) => {
+          this.model = gltf.scene ?? gltf.scenes[0];
+          if (!this.model) return;
+
+          // Возвращаем медузе её нормальные пропорции 1:1:1
+          this.model.scale.set(1, 1, 1);
+          this.model.position.set(0, -0.5, 0);
+
+          // ИСПРАВЛЕНО: Запуск встроенной профессиональной анимации
+          if (gltf.animations && gltf.animations.length > 0) {
+            this.mixer = new THREE.AnimationMixer(this.model);
+
+            // Берем первую анимацию (обычно это цикл плавания).
+            // Если она покажется не той, можно поменять индекс на 1, 2 и т.д.
+            const animationTrack = gltf.animations[0];
+            const action = this.mixer.clipAction(animationTrack);
+
+            action.play();
+          }
+
+          let meshIndex = 0;
+
+          this.model.traverse((obj) => {
+            if ((obj as THREE.Mesh).isMesh) {
+              const mesh = obj as THREE.Mesh;
+              mesh.frustumCulled = false;
+
+              // Считаем каждый найденный меш
+              meshIndex++;
+
+              if (mesh.material) {
+                const materials = Array.isArray(mesh.material)
+                  ? mesh.material
+                  : [mesh.material];
+
+                materials.forEach((mat) => {
+                  if ("transparent" in mat) mat.transparent = true;
+
+                  if ("depthWrite" in mat) mat.depthWrite = false;
+
+                  // Делаем весь материал матовым и мутным
+
+                  if ("roughness" in mat) mat.roughness = 4; // Чем выше, тем более мутная поверхность (до 1.0)
+
+                  // if ("metalness" in mat) mat.metalness = 0.0;
+
+                  // Включаем эффект подповерхностного размытия/преломления
+
+                  if ("transmission" in mat) (mat as any).transmission = 0.7;
+
+                  if ("thickness" in mat) (mat as any).thickness = 20.0;
+
+                  // Твоя рабочая настройка цвета и прозрачности
+
+                  if ("color" in mat && (mat as any).color) {
+                    (mat as any).color.multiplyScalar(0.4);
+
+                    const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
+
+                    (mat as any).color.add(pinkTint);
+                  }
+
+                  if ("opacity" in mat) {
+                    (mat as any).opacity = Math.min(
+                      (mat as any).opacity * 1.2,
+
+                      1.0,
+                    );
+                  }
+                });
+
+                //   if ("transparent" in mat) mat.transparent = true;
+                //   if ("depthWrite" in mat) mat.depthWrite = false;
+
+                //   // Обычные настройки для всей медузы
+                //   if ("roughness" in mat) mat.roughness = 0.5;
+
+                //   if ("color" in mat && (mat as any).color) {
+                //     (mat as any).color.multiplyScalar(0.4);
+
+                //     const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
+
+                //     (mat as any).color.add(pinkTint);
+                //   }
+
+                //   // ПРОВЕРКА: Пробуем поймать шапку.
+                //   // Обычно в GLB самый первый (1) или самый тяжелый меш — это купол.
+                //   // Если покрасятся щупальца, просто поменяй 1 на 2, 3 или 4!
+                //   const isCap = meshIndex === 1;
+
+                //   if ("color" in mat && (mat as any).color) {
+                //     if (isCap) {
+                //       if ("roughness" in mat) mat.roughness = 1;
+                //       // КРАСИМ ШАПКУ: делаем её более яркой, насыщенной и розовой
+                //       (mat as any).color.setHex(0xff00aa); // Чистый неоново-розовый цвет
+                //       (mat as any).color.multiplyScalar(0.3); // Приглушаем под твою общую яркость
+                //     } else {
+                //       // КРАСИМ ЩУПАЛЬЦА: твой стандартный рабочий цвет
+                //       (mat as any).color.multiplyScalar(0.4);
+                //       const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
+                //       (mat as any).color.add(pinkTint);
+                //     }
+                //   }
+
+                //   // Для шапки делаем прозрачность плотнее, чтобы она казалась закрашенной
+                //   if ("opacity" in mat) {
+                //     const baseOpacity = isCap ? 0.9 : 0.4; // Шапка почти непрозрачная, щупальца — воздушные
+                //     (mat as any).opacity = baseOpacity;
+                //   }
+                // });
+              }
+            }
+          });
+
+          scene.add(this.model);
+        },
+        undefined,
+        (err) => console.error("GLB Loading Error:", err),
+      );
+
+      const tick = () => {
+        this.rafId = requestAnimationFrame(tick);
+
+        const delta = this.clock.getDelta();
+        const elapsedTime = this.clock.getElapsedTime();
+
+        if (this.mixer) {
+          this.mixer.update(delta * 1.0);
+        }
+
+        if (this.model) {
+          // Оставляем только мягкое покачивание по оси Y
+          this.model.position.y = -0.5 + Math.sin(elapsedTime * 0.8) * 0.15;
+
+          // ИСПРАВЛЕНО: Вместо перезаписи всей ротации, плавно добавляем вращение вокруг своей оси
+          this.model.rotation.y += 0.002;
+        }
+
+        camera.lookAt(0, 0, 0);
+
+        if (this.renderer) {
+          this.renderer.render(scene, camera);
+        }
+      };
+      tick();
+    }
+
+    disconnectedCallback() {
+      if (this.rafId) cancelAnimationFrame(this.rafId);
+      if (this.renderer) {
+        this.renderer.dispose();
+        this.renderer.domElement.remove();
+      }
+    }
+  }
+
+  if (!customElements.get("three-crystal")) {
+    customElements.define("three-crystal", ThreeCrystal);
+  }
+</script>
