@@ -21,16 +21,55 @@
   import * as THREE from "three";
   import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
+  /**
+   * Внешний "вход" для управления объектом. Любой скрипт на странице
+   * (скролл-контроллеры, конкретные секции) может достать инстанс из
+   * window.crystalInstances / события "crystal:ready" и менять эти поля
+   * (напрямую или через gsap.to(crystal.target, {...})) — сам компонент
+   * в каждом кадре складывает их с базовой холостой анимацией в movement().
+   * Так у объекта всегда один источник правды на кадр, и разные секции
+   * не дёргают model.rotation/position напрямую и не конфликтуют друг с другом.
+   */
+  interface CrystalTarget {
+    rotationY: number; // доп. поворот по Y поверх холостого спина, радианы
+    rotationX: number; // доп. поворот по X, радианы
+    positionY: number; // доп. смещение по Y поверх покачивания
+    scale: number; // множитель масштаба (1 = как в GLTF)
+  }
+
   class ThreeCrystal extends HTMLElement {
     private renderer: THREE.WebGLRenderer | null = null;
     private rafId: number | null = null;
-    private model: THREE.Group | null = null;
+    model: THREE.Group | null = null;
     private mixer: THREE.AnimationMixer | null = null; // Миксер для встроенных анимаций
     private clock = new THREE.Clock();
+    // Постоянный "холостой" угол вращения по Y — крутится всегда сам по себе.
+    private baseAngle = 0;
+    // connectedCallback может вызваться повторно для одного и того же
+    // элемента. this.model/this.target/this.clock — свойства инстанса,
+    // общие для всех вызовов; если дать connectedCallback отработать
+    // больше одного раза, получится несколько независимых scene/renderer/
+    // tick()-циклов, которые все дерутся за одно и то же состояние —
+    // видимый canvas и реально управляемый через target могут разъехаться.
+    // Поэтому вся тяжёлая инициализация должна выполниться строго один раз.
+    private initialized = false;
+
+    target: CrystalTarget = {
+      rotationY: 0,
+      rotationX: 0,
+      positionY: 0,
+      scale: 1,
+    };
 
     connectedCallback() {
+      if (this.initialized) return;
+      this.initialized = true;
+
       const container = this.querySelector(".three-container");
       if (!container) return;
+
+      const crystals = ((window as any).crystalInstances ??= []);
+      crystals.push(this);
 
       this.renderer = new THREE.WebGLRenderer({
         alpha: true,
@@ -183,6 +222,9 @@
           });
 
           scene.add(this.model);
+          window.dispatchEvent(
+            new CustomEvent("crystal:ready", { detail: { element: this } }),
+          );
         },
         undefined,
         (err) => console.error("GLB Loading Error:", err),
@@ -198,13 +240,7 @@
           this.mixer.update(delta * 1.0);
         }
 
-        if (this.model) {
-          // Оставляем только мягкое покачивание по оси Y
-          this.model.position.y = -0.5 + Math.sin(elapsedTime * 0.8) * 0.15;
-
-          // ИСПРАВЛЕНО: Вместо перезаписи всей ротации, плавно добавляем вращение вокруг своей оси
-          this.model.rotation.y += 0.002;
-        }
+        this.movement(elapsedTime);
 
         camera.lookAt(0, 0, 0);
 
@@ -215,11 +251,40 @@
       tick();
     }
 
+    /**
+     * Единственное место, где меняются position/rotation/scale модели.
+     * Каждый кадр складывает базовую холостую анимацию (спин по Y,
+     * покачивание по Y) с this.target — данными, которые снаружи
+     * выставляют скролл-контроллеры/секции. Если понадобится новый вид
+     * движения (например наклон или смещение по X), добавляй поле в
+     * CrystalTarget и считай его здесь же — это единая точка правды,
+     * никакой другой код не должен трогать model.rotation/position напрямую.
+     */
+    private movement(elapsedTime: number) {
+      if (!this.model) return;
+
+      this.baseAngle -= 0.002;
+      this.model.rotation.y = this.baseAngle + this.target.rotationY;
+      this.model.rotation.x = this.target.rotationX;
+
+      const bob = Math.sin(elapsedTime * 0.8) * 0.15;
+      this.model.position.y = -0.5 + bob + this.target.positionY;
+
+      this.model.scale.setScalar(this.target.scale);
+    }
+
     disconnectedCallback() {
       if (this.rafId) cancelAnimationFrame(this.rafId);
       if (this.renderer) {
         this.renderer.dispose();
         this.renderer.domElement.remove();
+      }
+      const crystals = (window as any).crystalInstances as
+        | ThreeCrystal[]
+        | undefined;
+      if (crystals) {
+        const idx = crystals.indexOf(this);
+        if (idx !== -1) crystals.splice(idx, 1);
       }
     }
   }

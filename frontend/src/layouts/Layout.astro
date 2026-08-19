@@ -1,5 +1,6 @@
 ---
-import { FluidScene, PageTransition, PreLoader } from "../components";
+import { FluidScene, Object3D, PageTransition, PreLoader } from "../components";
+import CrystalController from "../components/animation/CrystalController.astro";
 import SmoothScroll from "../components/animation/SmoothScroll.astro";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
@@ -23,6 +24,8 @@ import { ClientRouter } from "astro:transitions";
     <!-- <PageTransition /> -->
     <div id="page-overlay" transition:persist></div>
     <FluidScene transition:persist client:visible />
+    <Object3D transition:persist />
+    <CrystalController />
     <SmoothScroll />
     <slot />
   </body>

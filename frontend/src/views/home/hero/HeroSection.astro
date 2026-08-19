@@ -1,12 +1,11 @@
 ---
-import { Object3D, TextEffect } from "../../../components";
+import { TextEffect } from "../../../components";
 ---
 
 <section
   id="hero"
   class="relative z-10 h-full max-h-250 min-h-[100vh] w-full max-w-[1920px] mx-auto"
 >
-  <Object3D />
 
   <div
     class="px-4 sm:px-16 py-16 sm:py-32 2xl:py-54 flex flex-col justify-between min-h-screen h-full text-background"
@@ -57,8 +56,13 @@ import { Object3D, TextEffect } from "../../../components";
     const oldJellyTrigger = ScrollTrigger.getById("jelly-scroll");
     if (oldJellyTrigger) oldJellyTrigger.kill();
 
+    // "body > three-crystal", а не просто "three-crystal" — на странице
+    // теперь два инстанса: этот (прямой child body, из Layout.astro) и
+    // отдельный внутри PreLoader.astro (nested, поэтому под селектор не
+    // попадает). Без уточнения тег-селектор двигал бы оба сразу.
+
     // 1. Инициализируем стартовую позицию в углу (теперь без конфликтов с CSS)
-    gsap.set("three-crystal", {
+    gsap.set("body > three-crystal", {
       rotation: -45,
       opacity: 0,
       scale: 0.6,
@@ -73,7 +77,7 @@ import { Object3D, TextEffect } from "../../../components";
     // 2. Интро-анимация (выплывание в рабочую позицию угла)
     const introTl = gsap.timeline();
 
-    introTl.to("three-crystal", {
+    introTl.to("body > three-crystal", {
       opacity: 1,
       scale: 1,
       bottom: "-10%",
@@ -105,7 +109,7 @@ import { Object3D, TextEffect } from "../../../components";
         });
 
         // Движение в центр
-        gsap.to("three-crystal", {
+        gsap.to("body > three-crystal", {
           top: "50%",
           left: "50%",
           xPercent: -50,

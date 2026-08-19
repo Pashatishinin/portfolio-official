@@ -1,47 +1,13 @@
 ---
-import { TextEffect } from "../../components";
-
-const images = [
-  "/preloader/001.avif",
-  "/preloader/002.avif",
-  "/preloader/003.avif",
-  "/preloader/004.avif",
-  "/preloader/005.avif",
-  "/preloader/006.avif",
-];
+import { Object3D } from "..";
+import TextEffect from "../animation/TextEffect.astro";
 ---
 
 <section
-  class="fixed top-0 left-0 preloader z-9999 w-screen h-screen bg-[#131313] flex flex-col justify-center items-center"
+  class="fixed top-0 left-0 preloader z-200000 w-screen h-screen bg-[#131313] flex flex-col justify-center items-center"
 >
-  <div
-    class="absolute w-[280px] h-[160px] lg:w-[350px] lg:h-[200px] flex justify-center items-center"
-  >
-    <video
-      autoplay
-      muted
-      loop
-      playsinline
-      poster="/Frame.jpg"
-      class="video-blur h-full object-cover opacity-0"
-    >
-      <source src="/Comp.webm" type="video/webm" />
-    </video>
-    <!-- <div class="relative w-full h-full overflow-hidden">
-      {
-        images.map((src) => (
-          <div class="img-wrapper absolute bottom-0 left-0 w-full h-0 overflow-hidden scale-50">
-            <img
-              src={src}
-              class="w-full h-full object-cover"
-              alt=""
-              fetchpriority="high"
-            />
-          </div>
-        ))
-      }
-    </div> -->
-  </div>
+  <Object3D />
+
   <div
     class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[300px] lg:gap-[400px] px-6"
   >
@@ -70,80 +36,212 @@ const images = [
         <TextEffect delay={0.7}>Technologist</TextEffect>
       </h1>
     </div>
+
+    <!-- <div
+      class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10"
+    > -->
+    <!-- ?xml version="1.0" encoding="UTF-8"? -->
+    <!-- <svg
+        id="a"
+        class="preloader-svg w-[250px] h-[250px] opacity-0"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 274.54 280.05"
+        ><defs
+          ><style>
+            .b {
+              fill: transparent;
+              stroke: #eeeeee;
+              stroke-miterlimit: 10;
+              stroke-width: 3.08px;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+            }
+          </style></defs
+        ><path
+          class="preloader-stroke b"
+          d="M87.46,10.48c2.01,15.26,3.45,37.23,0,63.2-2.31,17.4-6.98,32.1-16.21,60.77-19.07,59.25-29.88,73.45-38.89,82.65-9.57,9.76-25.2,22.15-29.98,18.64-.9-.66-4.22-3.94,4.86-25.93C28.19,159.08,99.03,47.81,117.44,58.29c17.34,9.87-22.44,121.68-32.41,119.93-3.95-.69-4.48-19.4-2.43-33.22,7.35-49.54,55.41-87.35,64.82-81.03,12.88,8.65-41.2,103.46-33.22,107.77,7.53,4.07,58.58-78.94,63.2-76.17,3.89,2.33-28.55,63.04-26.74,64.01,1.99,1.07,42.14-71.71,46.19-69.69,3.37,1.69-21.04,53.84-17.02,55.91,4.56,2.35,41.06-61.87,44.57-59.96,2.55,1.39-14.45,36.85-12.96,37.58,1.68.83,20.13-45.93,27.55-44.06,13.75,3.47,8.18,178.64-55.91,197.71-12.84,3.82-31.49,2.41-38.08-8.1-16.2-25.81,46.58-96.48,128.84-173.41"
+        ></path><path
+          class="preloader-stroke b"
+          d="M1.04,82.54C91.82,41.43,144.15,30.7,175.64,29.06c9.73-.51,45.26-1.59,48.62-14.59,1.27-4.93-2.45-10.19-5.67-13.78"
+        ></path></svg
+      >
+    </div>
+  </div> -->
   </div>
-</section>
 
-<script>
-  import gsap from "gsap";
+  <script>
+    import gsap from "gsap";
+    import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 
-  const setup = () => {
-    const preloader = document.querySelector(".preloader");
-    if (!preloader) return;
+    gsap.registerPlugin(DrawSVGPlugin);
 
-    const navEntries = performance.getEntriesByType("navigation");
-    const isReload =
-      navEntries.length > 0 &&
-      (navEntries[0] as PerformanceNavigationTiming).type === "reload";
-    const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
+    const setup = () => {
+      const preloader = document.querySelector(".preloader");
+      if (!preloader) return;
 
-    const initGapAnimation = () => {
-      const isMobile = window.innerWidth < 1024;
+      const navEntries = performance.getEntriesByType("navigation");
+      const isReload =
+        navEntries.length > 0 &&
+        (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+      const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
 
-      gsap.from(".grid-container", {
-        gap: isMobile ? "5px" : "20px",
-        duration: 1.5,
-        delay: 1.2,
-        ease: "expo.out",
-      });
-    };
+      // Второй, независимый от глобального (Layout.astro), инстанс
+      // Object3D — живёт только внутри прелоадера. Разворачиваем его
+      // статично на тот же угол по X, в который в итоге приходит объект
+      // в PreviewSection (см. CrystalController -> preview-rotate), и
+      // проигрываем короткое появление: scale 0 -> 1 через 0.5с.
+      const initPreloaderCrystalRotation = () => {
+        const crystal = document.querySelector<any>(".preloader three-crystal");
+        if (!crystal) return;
 
-    const initBgPreloader = () => {
-      gsap.to(".preloader", {
-        yPercent: -150,
-        skewY: -15,
-        duration: 1.5,
-        delay: 3.2,
-        ease: "expo.inOut",
-        onStart: () => {
-          sessionStorage.setItem("alreadyVisited", "true");
-        },
-        onComplete: () => {
-          gsap.set(".preloader", { skewY: 0 });
-        },
-      });
-    };
+        const setupCrystal = () => {
+          crystal.target.rotationX = -Math.PI / 2;
+          crystal.target.scale = 0;
+          gsap.to(crystal.target, {
+            scale: 1,
+            delay: 0.9,
+            duration: 0.5,
+            ease: "back.out(1.7)",
+          });
+        };
 
-    function initPreloaderImages() {
-      const wrappers = document.querySelectorAll(".img-wrapper");
-      if (wrappers.length === 0) return;
+        if (crystal.model) {
+          setupCrystal();
+        } else {
+          window.addEventListener(
+            "crystal:ready",
+            (e: Event) => {
+              if ((e as CustomEvent).detail.element === crystal) setupCrystal();
+            },
+            { once: true },
+          );
+        }
+      };
 
-      gsap.set(wrappers, { height: "0%", yPercent: 0, scale: 1, skewY: 20 });
+      const initGapAnimation = () => {
+        const isMobile = window.innerWidth < 1024;
+        const gapDelay = 1.2;
+        const gapDuration = 1.5;
 
-      const tl = gsap.timeline({
-        delay: 2.0,
-      });
+        const timeline = gsap.timeline({ delay: gapDelay });
 
-      wrappers.forEach((wrapper, index) => {
-        tl.to(wrapper, {
-          height: "100%",
-          skewY: 0,
-          duration: 0.1 + index * 0.05,
+        timeline.from(".grid-container", {
+          gap: isMobile ? "5px" : "20px",
+          duration: gapDuration,
           ease: "expo.out",
         });
-      });
-    }
 
-    if (isFirstLoad || isReload) {
-      gsap.to(".video-blur", { opacity: 1, duration: 0.6, delay: 1.4 });
-      initBgPreloader();
-      initGapAnimation();
-      initPreloaderImages();
-    } else {
-      gsap.set(preloader, { display: "none" });
-    }
+        return timeline;
+      };
 
-    document.addEventListener("astro:page-load", initPreloaderImages);
-  };
+      const initProgressTimer = () => {
+        const svg = document.querySelector(".preloader-svg");
+        const strokes = document.querySelectorAll(".preloader-stroke");
+        if (!svg || strokes.length === 0) return;
 
-  setup();
-</script>
+        gsap.set(svg, { autoAlpha: 0 });
+        gsap.set(strokes, { drawSVG: "0%", autoAlpha: 1 });
+
+        gsap.to(svg, {
+          autoAlpha: 1,
+          duration: 0.2,
+          delay: 1,
+          ease: "power2.out",
+        });
+
+        gsap.to(strokes, {
+          drawSVG: "100%",
+          autoAlpha: 1,
+          duration: 2,
+          delay: 1,
+          stagger: 0.15,
+          ease: "power2.inOut",
+        });
+      };
+
+      // Ждём реальную готовность контента (шрифты + все ресурсы страницы,
+      // включая тяжёлые чанки FluidScene/Object3D), а не полагаемся на то,
+      // что фиксированная задержка всегда успеет — на холодном первом
+      // визите загрузка может занять дольше 3.2с, и прелоадер уезжал раньше,
+      // чем текст/фон/анимации успевали отрисоваться.
+      const fontsReady =
+        (document.fonts && document.fonts.ready) || Promise.resolve();
+      const windowReady =
+        document.readyState === "complete"
+          ? Promise.resolve()
+          : new Promise<void>((resolve) =>
+              window.addEventListener("load", () => resolve(), { once: true }),
+            );
+
+      // Сохраняем исходный тайминг (svg/текст успевают доиграть к ~3.2с),
+      // но не уезжаем раньше, чем контент реально готов.
+      const minPacing = new Promise<void>((resolve) =>
+        setTimeout(resolve, 3200),
+      );
+      // Страховка: не блокируем показ сайта дольше 6с, даже если что-то
+      // (например, шрифт) так и не подтвердит готовность.
+      const safetyTimeout = new Promise<void>((resolve) =>
+        setTimeout(resolve, 6000),
+      );
+
+      const contentReady = Promise.race([
+        Promise.all([fontsReady, windowReady]),
+        safetyTimeout,
+      ]);
+      const readyToExit = Promise.all([contentReady, minPacing]);
+
+      const initBgPreloader = () => {
+        readyToExit.then(() => {
+          gsap.to(".preloader", {
+            yPercent: -150,
+            skewY: -15,
+            duration: 1.5,
+            ease: "expo.inOut",
+            onStart: () => {
+              sessionStorage.setItem("alreadyVisited", "true");
+            },
+            onComplete: () => {
+              gsap.set(".preloader", { skewY: 0 });
+            },
+          });
+        });
+      };
+
+      function initPreloaderImages() {
+        const wrappers = document.querySelectorAll(".img-wrapper");
+        if (wrappers.length === 0) return;
+
+        gsap.set(wrappers, { height: "0%", yPercent: 0, scale: 1, skewY: 20 });
+
+        const tl = gsap.timeline({
+          delay: 2.0,
+        });
+
+        wrappers.forEach((wrapper, index) => {
+          tl.to(wrapper, {
+            height: "100%",
+            skewY: 0,
+            duration: 0.1 + index * 0.05,
+            ease: "expo.out",
+          });
+        });
+      }
+
+      initPreloaderCrystalRotation();
+
+      if (isFirstLoad || isReload) {
+        const gapAnimation = initGapAnimation();
+        // gapAnimation.eventCallback("onComplete", initProgressTimer);
+        initProgressTimer();
+        initBgPreloader();
+        initPreloaderImages();
+      } else {
+        gsap.set(preloader, { display: "none" });
+      }
+
+      document.addEventListener("astro:page-load", initPreloaderImages);
+    };
+
+    setup();
+  </script>
+</section>

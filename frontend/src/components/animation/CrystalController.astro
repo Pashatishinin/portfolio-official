@@ -1,0 +1,108 @@
+---
+---
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Единая точка управления доп. движением 3D-объекта (Object3D/three-crystal)
+  // по скроллу. Постоянная холостая анимация (спин по Y, покачивание)
+  // живёт в самом Object3D (movement()), а этот контроллер твинит только
+  // crystal.target — данные, которые к ней прибавляются. Object3D ничего
+  // не знает о секциях/скролле, а секции ничего не знают про Three.js —
+  // вся связка тут, в одном списке ниже.
+
+  interface CrystalAnchorTarget {
+    rotationY?: number; // доп. поворот по Y поверх холостого спина, радианы
+    rotationX?: number; // доп. поворот по X, радианы
+    positionY?: number; // доп. смещение по Y поверх покачивания
+    scale?: number; // множитель масштаба (1 = как в GLTF)
+  }
+
+  interface CrystalAnchor {
+    id: string; // уникальный id — используется как основа ScrollTrigger id
+    trigger: string; // CSS-селектор триггера
+    start: string;
+    end: string;
+    scrub?: number | boolean;
+    target: CrystalAnchorTarget; // значения, которые должны быть достигнуты к "end"
+  }
+
+  // Чтобы добавить новую точку — добавь сюда новый объект. Ничего больше
+  // менять не нужно: applyAnchor подхватит его для всех текущих и будущих
+  // (ещё не загрузившихся) three-crystal на странице.
+  const anchors: CrystalAnchor[] = [
+    {
+      id: "preview-reveal",
+      // Та же дистанция скролла, что и у reveal'а .selected-works-back-scroll
+      // в SelectedWorksSection (top top, +=1000) — к моменту, когда этот
+      // слой полностью проявился, объект должен быть довёрнут на 90° по Y.
+      trigger: ".works-reveal-container",
+      start: "top top",
+      end: "+=1000",
+      scrub: 1,
+      // Модель почти симметрична относительно Y — чистое вращение
+      // визуально почти незаметно, поэтому positionY добавлен, чтобы
+      // движение было однозначно видно. scale сюда не добавляем — им
+      // уже владеет якорь preview-scale ниже, а диапазоны #preview и
+      // .works-reveal-container пересекаются (#preview лежит внутри
+      // works-reveal-container), так что два твина одного и того же
+      // scale друг с другом дрались бы и давали скачки.
+      target: { rotationY: Math.PI / 2, positionY: 3 },
+    },
+    {
+      id: "preview-scale",
+      trigger: "#preview",
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 1,
+      target: { scale: 2 },
+    },
+    {
+      id: "preview-rotate",
+      trigger: "#preview",
+      start: "top bottom-=400",
+      // Короткая дистанция от start — поворот укладывается в меньший
+      // скролл и завершается раньше конца секции, дальше объект стоит на 90°.
+      end: "+=600",
+      scrub: 1,
+      target: { rotationX: -Math.PI / 2 },
+    },
+  ];
+
+  const applyAnchor = (crystal: any, anchor: CrystalAnchor) => {
+    const triggerId = `crystal-${anchor.id}-${crystal.model.uuid}`;
+    ScrollTrigger.getById(triggerId)?.kill();
+
+    gsap.to(crystal.target, {
+      ...anchor.target,
+      ease: "none",
+      scrollTrigger: {
+        id: triggerId,
+        trigger: anchor.trigger,
+        start: anchor.start,
+        end: anchor.end,
+        scrub: anchor.scrub ?? 1,
+      },
+    });
+  };
+
+  const applyAllAnchors = (crystal: any) => {
+    if (!crystal.model) return;
+    anchors.forEach((anchor) => applyAnchor(crystal, anchor));
+  };
+
+  const initCrystalController = () => {
+    const crystals = ((window as any).crystalInstances as any[]) || [];
+    crystals.forEach(applyAllAnchors);
+  };
+
+  const handleCrystalReady = (e: Event) => {
+    applyAllAnchors((e as CustomEvent).detail.element);
+  };
+
+  document.addEventListener("astro:page-load", initCrystalController);
+  window.addEventListener("crystal:ready", handleCrystalReady);
+</script>

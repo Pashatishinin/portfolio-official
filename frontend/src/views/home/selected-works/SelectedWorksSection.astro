@@ -3,14 +3,14 @@ import PreviewSection from "../preview/PreviewSection.astro";
 import MyWorks from "./MyWorks.astro";
 ---
 
-<section id="works" class="relative flex flex-col w-full">
-  <div class="works-reveal-container relative w-full h-svh">
-    <div class="absolute inset-0 overflow-hidden min-h-screen">
+<section id="works" class="relative z-100000 flex flex-col w-full">
+  <div class="works-reveal-container relative z-0 w-full h-svh">
+    <div class="absolute inset-0 z-0 overflow-hidden min-h-screen">
       <PreviewSection />
     </div>
 
     <div
-      class="selected-works-back-scroll absolute inset-0 z-20 overflow-hidden bg-[#faf6f0]"
+      class="selected-works-back-scroll absolute inset-0 z-100000 overflow-hidden bg-[#faf6f0]"
     >
       <div class="absolute inset-0 flex items-center justify-center">
         <div
@@ -33,7 +33,7 @@ import MyWorks from "./MyWorks.astro";
     </div>
   </div>
 
-  <div class="relative z-20 bg-[#faf6f0]">
+  <div class="relative z-0 bg-[#faf6f0]">
     <MyWorks />
   </div>
 </section>

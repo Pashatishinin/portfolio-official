@@ -1,0 +1,111 @@
+---
+import { milestoneRows } from "../../../shared/data/milestones.data";
+
+const REPEAT_COUNT = 1;
+const rows = Array.from({ length: REPEAT_COUNT }, () => milestoneRows).flat();
+---
+
+<section id="contact" class="contact-section relative w-full text-secondary">
+  <div
+    class="contact-visual relative w-full h-svh flex justify-center items-center overflow-hidden"
+  >
+  </div>
+
+  <div
+    class="contact-info flex flex-col justify-center gap-6 py-32 overflow-hidden"
+  >
+    {
+      rows.map((row) => (
+        <div class="contact-info-row flex justify-center gap-4">
+          <p class="contact-info-cell flex-1 text-right text-lg sm:text-2xl leading-[0.95] -tracking-[0.025rem] will-change-transform">
+            {row.title
+              .split(" — ")
+              .flatMap((line, i, arr) =>
+                i < arr.length - 1 ? [line, <br />] : [line],
+              )}
+          </p>
+          <p class="contact-info-cell font-accent flex-1 text-lg sm:text-2xl leading-[0.95] -tracking-[0.025rem] text-[#4f4f4f] will-change-transform">
+            {row.description}
+          </p>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  let triggers: ScrollTrigger[] = [];
+
+  const initContactAnimation = () => {
+    triggers.forEach((trigger) => trigger.kill());
+    triggers = [];
+
+    const section = document.querySelector("#contact");
+    const rows = document.querySelectorAll("#contact .contact-info-row");
+    if (!section || rows.length === 0) return;
+
+    const maxGap = window.innerWidth < 1000 ? 10 : 20;
+
+    // three-crystal теперь один общий инстанс на весь сайт (Layout.astro),
+    // видимый непрерывно от Hero и дальше — не скрываем его тут: раньше
+    // это была ОТДЕЛЬНАЯ копия, скрытая по умолчанию и включаемая только
+    // в #contact, но на общем инстансе такое скрытие ничем не отменяется
+    // при уходе из #contact, и объект пропадает навсегда для верхних секций.
+    triggers.push(
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        onToggle: (self) => section.classList.toggle("is-active", self.isActive),
+      }),
+    );
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll<HTMLElement>(".contact-info-cell");
+      const [label, value] = cells;
+      if (!label || !value) return;
+
+      // Pushes the label/value apart from the row's center — translate only,
+      // so layout height never changes and later triggers can't drift.
+      const setOffset = (offsetRem: number) => {
+        label.style.transform = `translateX(-${offsetRem}rem)`;
+        value.style.transform = `translateX(${offsetRem}rem)`;
+      };
+
+      // "center center" — точка отсчёта считается GSAP от фактической
+      // геометрии строки (row), а не от фиксированного пикселя из "top";
+      // работает одинаково независимо от того, в одну строку текст или
+      // перенёсся на две.
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: row,
+          start: "center center+=100",
+          end: "center center",
+          scrub: true,
+          onUpdate: (self) => setOffset((maxGap / 2) * self.progress),
+        }),
+      );
+
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: row,
+          start: "center center",
+          end: "center center-=100",
+          scrub: true,
+          onUpdate: (self) => setOffset((maxGap / 2) * (1 - self.progress)),
+        }),
+      );
+    });
+  };
+
+  document.addEventListener("astro:page-load", initContactAnimation);
+  document.addEventListener("astro:before-preparation", () => {
+    triggers.forEach((trigger) => trigger.kill());
+    triggers = [];
+  });
+</script>

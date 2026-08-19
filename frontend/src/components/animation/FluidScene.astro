@@ -139,7 +139,8 @@
       return;
     }
 
-    class FluidScene {
+    try {
+      class FluidScene {
       container: HTMLElement;
       width: number;
       height: number;
@@ -302,8 +303,11 @@
       }
     }
 
-    if (container) {
-      (window as any).fluidBackground = new FluidScene(container);
+      if (container) {
+        (window as any).fluidBackground = new FluidScene(container);
+      }
+    } catch (err) {
+      console.error("FluidScene init failed, falling back to static background:", err);
     }
   }
   if (document.readyState === "complete") {
@@ -320,6 +324,6 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: #000;
+    background: #f5f5f7;
   }
 </style>
