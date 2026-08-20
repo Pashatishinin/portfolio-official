@@ -33,6 +33,7 @@
   interface CrystalTarget {
     rotationY: number; // доп. поворот по Y поверх холостого спина, радианы
     rotationX: number; // доп. поворот по X, радианы
+    rotationZ: number; // доп. поворот по Z, радианы
     positionY: number; // доп. смещение по Y поверх покачивания
     scale: number; // множитель масштаба (1 = как в GLTF)
   }
@@ -43,8 +44,6 @@
     model: THREE.Group | null = null;
     private mixer: THREE.AnimationMixer | null = null; // Миксер для встроенных анимаций
     private clock = new THREE.Clock();
-    // Постоянный "холостой" угол вращения по Y — крутится всегда сам по себе.
-    private baseAngle = 0;
     // connectedCallback может вызваться повторно для одного и того же
     // элемента. this.model/this.target/this.clock — свойства инстанса,
     // общие для всех вызовов; если дать connectedCallback отработать
@@ -57,6 +56,7 @@
     target: CrystalTarget = {
       rotationY: 0,
       rotationX: 0,
+      rotationZ: 0,
       positionY: 0,
       scale: 1,
     };
@@ -253,19 +253,19 @@
 
     /**
      * Единственное место, где меняются position/rotation/scale модели.
-     * Каждый кадр складывает базовую холостую анимацию (спин по Y,
-     * покачивание по Y) с this.target — данными, которые снаружи
-     * выставляют скролл-контроллеры/секции. Если понадобится новый вид
-     * движения (например наклон или смещение по X), добавляй поле в
+     * Каждый кадр применяет this.target — данными, которые снаружи
+     * выставляют скролл-контроллеры/секции (постоянного холостого спина
+     * больше нет — объект вращается только когда это явно задано через
+     * target). Если понадобится новый вид движения, добавляй поле в
      * CrystalTarget и считай его здесь же — это единая точка правды,
      * никакой другой код не должен трогать model.rotation/position напрямую.
      */
     private movement(elapsedTime: number) {
       if (!this.model) return;
 
-      this.baseAngle -= 0.002;
-      this.model.rotation.y = this.baseAngle + this.target.rotationY;
+      this.model.rotation.y = this.target.rotationY;
       this.model.rotation.x = this.target.rotationX;
+      this.model.rotation.z = this.target.rotationZ;
 
       const bob = Math.sin(elapsedTime * 0.8) * 0.15;
       this.model.position.y = -0.5 + bob + this.target.positionY;

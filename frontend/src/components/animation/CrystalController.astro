@@ -91,6 +91,13 @@
 
   const applyAllAnchors = (crystal: any) => {
     if (!crystal.model) return;
+    // На странице два инстанса three-crystal: общий (прямой child body,
+    // Layout.astro) и отдельный, изолированный внутри PreLoader.astro
+    // (свой scale/rotationX, не должен зависеть от скролла остальной
+    // страницы). Без этой проверки якоря applyAllAnchors цепляли ОБА
+    // инстанса через общий window.crystalInstances, и объект в прелоадере
+    // менялся в размерах вслед за скроллом через PreviewSection.
+    if (crystal.closest && crystal.closest(".preloader")) return;
     anchors.forEach((anchor) => applyAnchor(crystal, anchor));
   };
 
