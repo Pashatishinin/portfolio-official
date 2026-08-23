@@ -7,11 +7,13 @@ const year = new Date().getFullYear();
 ---
 
 <div class="footer-columns mt-12 sm:mt-20 mix-blend-difference">
-  {/*
+  {
+    /*
     На мобильном колонки складываются в одну: при grid-cols-2 на 360px
     каждая получает ~148px, а адрес почты в 16px занимает около 145 —
     он либо переносился, либо вылезал за край.
-  */}
+  */
+  }
   <div class="cols grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10">
     <div class="col">
       <h4 class="mono">Contact</h4>
@@ -62,7 +64,7 @@ const year = new Date().getFullYear();
       class="to-top logo-container inline-block cursor-pointer"
       aria-label="Scroll back to top"
     >
-      <div class="overflow-hidden h-[20px] relative">
+      <div class="overflow-hidden h-[1.35em] relative">
         <div class="logo-wrapper">
           <p class="logo-text m-0">Back to top ↑</p>
           <p class="logo-text m-0 absolute top-0 left-0 w-full opacity-0">
@@ -112,8 +114,6 @@ const year = new Date().getFullYear();
      different component file, hence is:global here. */
   .mono {
     font-family: "JetBrains Mono", monospace;
-    /* было 0.62rem при opacity 0.34 — под mix-blend-difference
-       это уходило почти в фон; 11px и 0.45 читаются, оставаясь подписью */
     font-size: 0.69rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -121,7 +121,7 @@ const year = new Date().getFullYear();
   }
 
   .col {
-    min-width: 0; /* иначе длинная почта распирает колонку грида */
+    min-width: 0;
   }
 
   .col h4 {
@@ -147,7 +147,21 @@ const year = new Date().getFullYear();
     outline-offset: 4px;
   }
 
-  /* адрес почты — самое длинное слово в футере, ему нужен перенос */
+  /* Фикс высоты и выравнивания по базовой линии */
+  .logo-container {
+    vertical-align: top;
+  }
+
+  .logo-container .overflow-hidden {
+    height: 1.25em !important;
+  }
+
+  .logo-container .logo-text {
+    line-height: 1.25 !important;
+    margin: 0;
+    padding: 0;
+  }
+
   .email {
     overflow-wrap: anywhere;
   }
@@ -178,7 +192,6 @@ const year = new Date().getFullYear();
   }
 
   .to-top {
-    /* кнопка, а не ссылка: действие на странице, а не переход по адресу */
     appearance: none;
     background: none;
     border: 0;
