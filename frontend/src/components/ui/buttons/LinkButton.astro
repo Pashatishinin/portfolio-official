@@ -4,9 +4,11 @@ interface Props {
   text: string;
   href?: string;
   class?: string;
+  target?: string;
+  rel?: string;
 }
 
-const { text, href = "#", class: className, aria } = Astro.props;
+const { text, href = "#", class: className, aria, target, rel } = Astro.props;
 ---
 
 <a
@@ -14,6 +16,8 @@ const { text, href = "#", class: className, aria } = Astro.props;
   class:list={["logo-container inline-block cursor-pointer", className]}
   data-scroll-link
   aria-label={aria}
+  target={target}
+  rel={rel}
 >
   <div class="overflow-hidden h-[20px] relative">
     <div class="logo-wrapper">
