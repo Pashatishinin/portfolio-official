@@ -115,6 +115,8 @@ const {
   });
 
   document.addEventListener("astro:page-load", () => {
-    initTextEffects();
+    document.fonts.ready.then(() => {
+      initTextEffects();
+    });
   });
 </script>

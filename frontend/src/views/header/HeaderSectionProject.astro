@@ -18,7 +18,13 @@ const { title } = Astro.props;
 <style>
   .header {
     mix-blend-mode: difference;
+    pointer-events: none;
     color: white;
+  }
+
+  .header :global(a),
+  .header :global(button) {
+    pointer-events: auto;
   }
 </style>
 

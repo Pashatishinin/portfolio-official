@@ -1,0 +1,24 @@
+{
+  "name": "studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "typegen": "sanity typegen generate"
+  },
+  "dependencies": {
+    "@sanity/icons": "^5.2.1",
+    "@sanity/vision": "^6.10.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sanity": "^6.10.1",
+    "styled-components": "^6.5.3"
+  },
+  "devDependencies": {
+    "@sanity/cli": "^8.0.0",
+    "typescript": "^7.0.2"
+  }
+}

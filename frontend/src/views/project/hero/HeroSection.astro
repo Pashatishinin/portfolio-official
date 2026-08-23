@@ -1,5 +1,8 @@
 ---
-import { Image } from "astro:assets";
+interface Props {
+  text?: string;
+  img: string | null;
+}
 
 const { text, img } = Astro.props;
 ---
@@ -14,27 +17,35 @@ const { text, img } = Astro.props;
     </div> -->
 
     <div class="h-full image">
-      <Image
-        src={img}
-        alt="Описание"
-        width={2400}
-        loading="eager"
-        fetchpriority="high"
-      />
+      {
+        img && (
+          <img
+            src={img}
+            alt={text}
+            width="2400"
+            loading="eager"
+            fetchpriority="high"
+          />
+        )
+      }
     </div>
   </div>
 </section>
 
 <style>
   .image {
+    position: relative;
     overflow: hidden;
   }
 
   .image img {
-    height: 100%;
+    position: relative;
+    top: -15%;
+    height: 130%;
     width: 100%;
     object-fit: cover;
     display: block;
+    will-change: transform;
   }
 
   p {
@@ -45,6 +56,9 @@ const { text, img } = Astro.props;
 
 <script>
   import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
 
   const animateImage = () => {
     const img = document.querySelector<HTMLElement>(".image img");
@@ -52,7 +66,7 @@ const { text, img } = Astro.props;
 
     gsap.killTweensOf(img);
     gsap.set(img, {
-      scale: 1.5,
+      scale: 1.05,
       rotation: 4,
       transformOrigin: "center center",
     });
@@ -61,9 +75,36 @@ const { text, img } = Astro.props;
       rotation: 0,
       duration: 1.4,
       ease: "expo.out",
-      clearProps: "transform",
     });
   };
 
-  document.addEventListener("astro:page-load", animateImage);
+  const initParallax = () => {
+    const section = document.querySelector<HTMLElement>(".image")?.closest("section");
+    const img = document.querySelector<HTMLElement>(".image img");
+    if (!section || !img) return;
+
+    ScrollTrigger.getAll().forEach((trigger) => {
+      if (trigger.vars.trigger === section) trigger.kill();
+    });
+
+    gsap.fromTo(
+      img,
+      { yPercent: -4 },
+      {
+        yPercent: 4,
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      },
+    );
+  };
+
+  document.addEventListener("astro:page-load", () => {
+    animateImage();
+    initParallax();
+  });
 </script>

@@ -3,7 +3,7 @@ import Logo from "../../components/ui/buttons/Logo.astro";
 ---
 
 <section
-  class="header fixed inset-x-0 z-999 flex justify-between px-4 sm:px-16 py-8 max-w-480 mx-auto"
+  class="header fixed inset-x-0 z-150000 flex justify-between px-4 sm:px-16 py-8 max-w-480 mx-auto"
 >
   <div>
     <Logo />
@@ -13,8 +13,13 @@ import Logo from "../../components/ui/buttons/Logo.astro";
 <style>
   .header {
     mix-blend-mode: difference;
-
+    pointer-events: none;
     color: white;
+  }
+
+  .header :global(a),
+  .header :global(button) {
+    pointer-events: auto;
   }
 
   .italic {

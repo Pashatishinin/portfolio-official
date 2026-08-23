@@ -1,5 +1,9 @@
 ---
+interface Props {
+  imageUrl: string | null;
+}
 
+const { imageUrl } = Astro.props;
 ---
 
 <div class="h-[150vh] flex justify-center">
@@ -7,6 +11,7 @@
     id="about-img-wrap"
     class="w-56 sm:w-64 md:w-72 lg:w-80 -z-1 opacity-50"
     style="overflow:visible"
+    data-image-url={imageUrl}
   >
     <canvas id="about-canvas" style="display:block"></canvas>
   </div>
@@ -103,11 +108,16 @@
       mesh.scale.set(texAspect * inner, inner, 1);
     }
 
-    new THREE.TextureLoader().load("/about.jpeg", (tex) => {
-      uniforms.uTexture.value = tex;
-      texAspect = tex.image.width / tex.image.height;
-      resize();
-    });
+    const imageUrl = wrap.dataset.imageUrl;
+    if (imageUrl) {
+      const loader = new THREE.TextureLoader();
+      loader.setCrossOrigin("anonymous");
+      loader.load(imageUrl, (tex) => {
+        uniforms.uTexture.value = tex;
+        texAspect = tex.image.width / tex.image.height;
+        resize();
+      });
+    }
 
     resize();
 

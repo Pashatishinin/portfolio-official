@@ -75,9 +75,17 @@ const { text, href = "#", class: className, aria } = Astro.props;
     });
   }
 
-  initAnimations();
+  function initAnimationsWhenReady() {
+    // SplitText measures char widths from the currently rendered font;
+    // running it before the real font has loaded bakes in fallback-font
+    // metrics, permanently misaligning the swap animation (masked by
+    // overflow:hidden, so the button just looks empty) until reload.
+    document.fonts.ready.then(initAnimations);
+  }
 
-  document.addEventListener("astro:after-swap", initAnimations);
+  initAnimationsWhenReady();
+
+  document.addEventListener("astro:after-swap", initAnimationsWhenReady);
 </script>
 
 <style>

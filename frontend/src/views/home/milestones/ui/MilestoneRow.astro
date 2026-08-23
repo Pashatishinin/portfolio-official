@@ -1,0 +1,45 @@
+---
+interface Props {
+  name: string;
+  role: string | null;
+  description: string;
+  link: string;
+}
+
+const { name, role, description, link } = Astro.props;
+---
+
+<a
+  href={link}
+  class="name-roll-trigger milestone-row flex justify-center items-center gap-4"
+>
+  <p
+    class="milestone-cell flex-1 text-right text-xl sm:text-3xl leading-[0.95] -tracking-[0.025rem] text-black will-change-transform"
+  >
+    <span
+      class="name-roll-container relative inline-block overflow-hidden align-bottom h-[1.25em]"
+    >
+      <span class="name-roll-text block leading-[1.25em]">
+        {name}
+      </span>
+      <span
+        class="name-roll-text absolute top-0 left-0 block w-full leading-[1.25em] opacity-0"
+      >
+        {name}
+      </span>
+    </span>
+    {
+      role && (
+        <>
+          <br />
+          <span class="text-[0.6em]">{role}</span>
+        </>
+      )
+    }
+  </p>
+  <p
+    class="milestone-cell font-accent flex-1 text-lg sm:text-2xl leading-[0.95] -tracking-[0.025rem] text-[#4f4f4f] will-change-transform"
+  >
+    <span class="inline-block max-w-100">{description}</span>
+  </p>
+</a>

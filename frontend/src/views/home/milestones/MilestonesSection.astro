@@ -1,0 +1,34 @@
+---
+import { getMilestones } from "../../../shared/api/home.api";
+import MilestoneRow from "./ui/MilestoneRow.astro";
+import MilestonesHeading from "./ui/MilestonesHeading.astro";
+
+const rows = await getMilestones();
+---
+
+<section
+  id="milestones"
+  class="milestones-section relative w-full text-secondary"
+>
+  <MilestonesHeading />
+
+  <div
+    class="milestones-list flex flex-col justify-center gap-6 py-32 overflow-hidden"
+  >
+    {
+      rows.map((row) => (
+        <MilestoneRow
+          name={row.name}
+          role={row.role}
+          description={row.description}
+          link={row.link}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import { setupMilestonesAnimation } from "./milestonesAnimation";
+  setupMilestonesAnimation();
+</script>

@@ -1,6 +1,6 @@
 ---
 interface VideoItem {
-    src: string;
+    src: string | null;
     poster: string;
 }
 interface Props {
@@ -15,16 +15,24 @@ const { listVideo = [] } = Astro.props;
         {
             listVideo.map((video) => (
                 <div class="preview-video-item">
-                    <video
-                        autoplay
-                        muted
-                        loop
-                        playsinline
-                        poster={video.poster}
-                        class="video-blur w-full h-full object-cover"
-                    >
-                        <source src={video.src} type="video/mp4" />
-                    </video>
+                    {video.src ? (
+                        <video
+                            autoplay
+                            muted
+                            loop
+                            playsinline
+                            poster={video.poster}
+                            class="video-blur w-full h-full object-cover"
+                        >
+                            <source src={video.src} type="video/mp4" />
+                        </video>
+                    ) : (
+                        <img
+                            src={video.poster}
+                            alt=""
+                            class="video-blur w-full h-full object-cover"
+                        />
+                    )}
                 </div>
             ))
         }

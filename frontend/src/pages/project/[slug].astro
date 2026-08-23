@@ -1,0 +1,42 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getProjects } from "../../shared/api/project.api";
+import FooterSection from "../../views/footer/FooterSection.astro";
+import HeaderSectionProject from "../../views/header/HeaderSectionProject.astro";
+import {
+  AboutProjectSection,
+  HeroSection,
+  NextProjectSection,
+  ShortPreviewSection,
+} from "../../views/project";
+
+const { slug } = Astro.params;
+const projects = await getProjects();
+const projectIndex = projects.findIndex((p) => p.slug === slug);
+
+if (projectIndex === -1) {
+  return Astro.redirect("/");
+}
+
+const project = projects[projectIndex];
+const nextProject = projects[(projectIndex + 1) % projects.length];
+const nextProjectLink = project.nextProjectLink ?? `/project/${nextProject.slug}`;
+---
+
+<Layout>
+  <HeaderSectionProject title={project.headerTitle} />
+  <HeroSection text={project.heroText} img={project.mainImg} />
+
+  <ShortPreviewSection listVideo={project.videos} info={project.info} />
+  <AboutProjectSection
+    role={project.role}
+    tools={project.tools}
+    year={project.year}
+    index={projectIndex + 1}
+    total={projects.length}
+    liveLink={project.liveLink}
+    githubLink={project.githubLink}
+  />
+  <NextProjectSection link={nextProjectLink} />
+  <FooterSection />
+</Layout>

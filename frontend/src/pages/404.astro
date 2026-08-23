@@ -1,0 +1,531 @@
+---
+import TextEffectLine from "../components/animation/TextEffectLine.astro";
+import LinkButton from "../components/ui/buttons/LinkButton.astro";
+import Logo from "../components/ui/buttons/Logo.astro";
+// LinkButton relies on Tailwind utility classes (overflow-hidden, absolute,
+// etc.) for its text-swap layout. This page doesn't use Layout.astro (which
+// normally pulls this in), so without it those utilities silently don't
+// exist and the swap animation shows both text layers stacked, unclipped.
+import "../styles/global.css";
+
+Astro.response.status = 404;
+Astro.response.statusText = "Not Found";
+
+const LINES = [
+  "I asked you not to scroll down.",
+  "There is genuinely nothing here.",
+  "Seriously? You think something is coming?",
+  "I'd blame the developer for this page.",
+  "He is also the designer. And the host.",
+  "So there is nobody left to blame.",
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>404 — please don't scroll</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <style>
+      :root {
+        --ink: #141821;
+        --ink-2: #4a4e57;
+        --ink-3: #8b8880;
+        --cream: #faf6ef;
+        --hair: rgba(20, 24, 33, 0.24);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+        overflow-x: hidden;
+
+        background:
+          radial-gradient(
+            48% 30% at 14% 4%,
+            #f6f1e4 0%,
+            rgba(246, 241, 228, 0) 60%
+          ),
+          radial-gradient(
+            52% 34% at 86% 10%,
+            #e9e1cd 0%,
+            rgba(233, 225, 205, 0) 62%
+          ),
+          radial-gradient(
+            60% 26% at 30% 52%,
+            #c6ccd6 0%,
+            rgba(198, 204, 214, 0) 62%
+          ),
+          radial-gradient(
+            54% 24% at 78% 74%,
+            #efe7d4 0%,
+            rgba(239, 231, 212, 0) 62%
+          ),
+          linear-gradient(
+            172deg,
+            #ede6d4 0%,
+            #d8d9da 22%,
+            #efe8d8 44%,
+            #cbd1da 66%,
+            #ede7d8 84%,
+            #c9cfd9 100%
+          );
+        background-attachment: fixed;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.85;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      main,
+      .bar,
+      .depth {
+        position: relative;
+        z-index: 1;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      a:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 5px;
+      }
+
+      .bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 5;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.25rem, 4vw, 3.5rem);
+        mix-blend-mode: multiply;
+      }
+      .bar .name {
+        font-size: 0.9rem;
+        line-height: 1.1;
+      }
+      .bar .code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        color: var(--ink-2);
+      }
+
+      .bar .right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.55rem;
+      }
+      .depth {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        line-height: 1.5;
+        color: var(--ink-3);
+        text-align: right;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .depth.on {
+        opacity: 1;
+      }
+
+      .hero {
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 6rem 1.5rem 3rem;
+      }
+      .hero .title {
+        text-align: center;
+        line-height: 0.9;
+      }
+      .hero .title .a {
+        display: block;
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(2.2rem, 5.6vw, 3.8rem);
+        word-spacing: 0.14em;
+      }
+      .hero .title .b {
+        display: block;
+        font-weight: 600;
+        letter-spacing: -0.045em;
+        word-spacing: 0.14em;
+        font-size: clamp(3rem, 9vw, 6.2rem);
+        margin-top: -0.1em;
+      }
+      .hero .sub {
+        text-align: center;
+        margin: 1.5rem auto 2.4rem;
+        color: var(--ink-2);
+        font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+        max-width: 34ch;
+        line-height: 1.6;
+      }
+
+      .aside {
+        margin-top: 2.2rem;
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: var(--ink-2);
+        display: flex;
+        gap: 0.55rem;
+        align-items: baseline;
+      }
+      .aside .star {
+        font-family: "Poppins", sans-serif;
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .aside-text {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+      }
+
+      .hint {
+        margin-top: 3.2rem;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        animation: bob 2.4s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.6;
+        }
+        50% {
+          transform: translateY(5px);
+          opacity: 1;
+        }
+      }
+
+      .beat {
+        min-height: 66svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem clamp(1.25rem, 6vw, 4rem);
+      }
+      .beat-row {
+        margin: 0;
+        max-width: 22ch;
+        display: flex;
+        gap: 0.6rem;
+        align-items: baseline;
+        font-size: clamp(1.2rem, 12.6vw, 2.3rem);
+        line-height: 1.25;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+      .beat-row .star {
+        font-family: "Poppins", sans-serif;
+        font-style: normal;
+        font-size: 0.5em;
+        color: var(--ink-3);
+        transform: translateY(-0.15em);
+      }
+      .beat-text {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+      }
+
+      .beat:nth-child(odd) {
+        justify-content: flex-start;
+      }
+      .beat:nth-child(even) {
+        justify-content: flex-end;
+      }
+      .beat:nth-child(3n) {
+        justify-content: center;
+      }
+
+      .payoff {
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem 6rem;
+        text-align: center;
+        gap: 1.6rem;
+      }
+      .payoff .big {
+        font-weight: 600;
+        letter-spacing: -0.045em;
+        line-height: 0.95;
+        font-size: clamp(2.6rem, 8vw, 5rem);
+      }
+      .payoff .lede {
+        max-width: 42ch;
+        color: var(--ink-2);
+        line-height: 1.65;
+        font-size: clamp(1rem, 1.8vw, 1.1rem);
+        margin: 0;
+      }
+      .payoff .row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 0.8rem;
+      }
+      .payoff .fine {
+        margin-top: 2.4rem;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .payoff .fine a {
+        border-bottom: 1px solid var(--hair);
+        padding-bottom: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .hint {
+          animation: none;
+        }
+      }
+    </style>
+
+    <!-- LinkButton renders its own <a> in a separate component file, so
+         Astro's scoped-style attribute never reaches it — this block has to
+         stay global for these rules to actually apply. -->
+    <style is:global>
+      a.cta-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--ink);
+      }
+      /* Back-arrow buttons: mark renders after the text in the DOM
+         (LinkButton's slot comes last), so flip the row to put it first
+         visually, matching the left-pointing arrow. */
+      a.cta-link--back {
+        flex-direction: row-reverse;
+      }
+      /* LinkButton's text-swap wrapper defaults to a 20px/24px line-height
+         row; shrink it just for the 404 CTAs without touching the shared
+         component (Logo, NextProjectSection still use the default size). */
+      .cta-link .overflow-hidden {
+        height: 16px;
+      }
+      .cta-link .logo-text {
+        line-height: 16px;
+      }
+      .cta-link__mark {
+        position: relative;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cta-link__mark-circle {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+        overflow: visible;
+      }
+      .cta-link__mark-circle circle {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-dasharray: 113;
+        stroke-dashoffset: 113;
+        transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .cta-link:hover .cta-link__mark-circle circle,
+      .cta-link:focus-visible .cta-link__mark-circle circle {
+        stroke-dashoffset: 0;
+      }
+      .cta-link__mark-arrow {
+        position: relative;
+        font-size: 1.4rem;
+        line-height: 1;
+        transition: font-size 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .cta-link:hover .cta-link__mark-arrow,
+      .cta-link:focus-visible .cta-link__mark-arrow {
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+
+  <body id="top">
+    <header class="bar">
+      <div class="name"><Logo /></div>
+      <span class="right">
+        <span class="code">ERROR 404</span>
+        <span class="depth" id="depth">DEPTH 0 PX<br />STILL NOTHING</span>
+      </span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="title">
+          <span class="a"
+            ><TextEffectLine blockColor="#141821" align="center"
+              >This page</TextEffectLine
+            ></span
+          >
+          <span class="b"
+            ><TextEffectLine blockColor="#141821" delay={0.1} align="center"
+              >Doesn't Exist</TextEffectLine
+            ></span
+          >
+        </div>
+        <p class="sub">
+          Every other one does, and they took longer to make than this one.
+        </p>
+        <LinkButton
+          text="Back to home page"
+          href="/"
+          class="cta-link cta-link--back"
+        >
+          <span class="cta-link__mark" aria-hidden="true">
+            <svg class="cta-link__mark-circle" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="18"></circle>
+            </svg>
+            <span class="cta-link__mark-arrow">←</span>
+          </span>
+        </LinkButton>
+
+        <div class="aside">
+          <span class="star">*</span>
+          <div class="aside-text">
+            <TextEffectLine blockColor="#4a4e57"
+              >and please don't scroll down</TextEffectLine
+            >
+          </div>
+        </div>
+
+        <div class="hint">you will anyway ↓</div>
+      </section>
+
+      {
+        LINES.map((text) => (
+          <section class="beat">
+            <div class="beat-row">
+              <span class="star">*</span>
+              <div class="beat-text">
+                <TextEffectLine blockColor="#141821">{text}</TextEffectLine>
+              </div>
+            </div>
+          </section>
+        ))
+      }
+
+      <section class="payoff">
+        <div class="big">Fine. You win.</div>
+        <p class="lede">
+          You just scrolled to the bottom of a page that doesn't exist, past six
+          warnings, for no reward whatsoever. That is exactly the kind of
+          stubbornness a design project needs.
+        </p>
+        <div class="row">
+          <LinkButton
+            text="Back to home page"
+            href="/"
+            class="cta-link cta-link--back"
+          >
+            <span class="cta-link__mark" aria-hidden="true">
+              <svg class="cta-link__mark-circle" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="18"></circle>
+              </svg>
+              <span class="cta-link__mark-arrow">←</span>
+            </span>
+          </LinkButton>
+        </div>
+        <p class="fine">
+          or <a href="#top">scroll all the way back up</a> and pretend this never
+          happened
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const depth = document.getElementById("depth");
+      const MOODS = [
+        "STILL NOTHING",
+        "STILL NOTHING",
+        "NOTHING YET",
+        "REALLY, NOTHING",
+        "YOU ARE COMMITTED",
+        "ALMOST OUT OF PAGE",
+        "THAT IS THE FLOOR",
+      ];
+      let ticking = false;
+      function update() {
+        const y = Math.round(window.scrollY);
+        const max = document.body.scrollHeight - window.innerHeight;
+        const i = Math.min(
+          MOODS.length - 1,
+          Math.floor((y / Math.max(max, 1)) * MOODS.length),
+        );
+        if (depth) {
+          depth.innerHTML =
+            "DEPTH " + y.toLocaleString("en-US") + " PX<br>" + MOODS[i];
+          depth.classList.toggle("on", y > 120);
+        }
+        ticking = false;
+      }
+      addEventListener(
+        "scroll",
+        () => {
+          if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(update);
+          }
+        },
+        { passive: true },
+      );
+      update();
+    </script>
+  </body>
+</html>

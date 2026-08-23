@@ -1,81 +1,459 @@
 ---
-import { TextEffectLine } from "../../../components";
-
 interface Props {
   role?: string[];
   tools?: string[];
   year?: string;
   info?: string;
+  index?: number;
+  total?: number;
+  liveLink?: string;
+  githubLink?: string;
 }
 
-const { role = [], tools = [], year, info } = Astro.props;
+const {
+  role = [],
+  tools = [],
+  year,
+  info,
+  index,
+  total,
+  liveLink,
+  githubLink,
+} = Astro.props;
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const displayUrl = (url: string) =>
+  url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 ---
 
-<section
-  class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16 bg-[#faf6f0]"
->
-  <div
-    class="grid
-    gap-4
-    sm:gap-0
-    grid-cols-1
-    sm:grid-cols-3
-    w-full"
-  >
-    <div class="flex flex-col">
-      <h1 class="text-sm">Role</h1><div>
-        {
-          role.map((item) => (
-            <p>
-              <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
-            </p>
-          ))
-        }
+<section class="project-meta" aria-label="Project information">
+  <div class="project-meta__inner">
+    {
+      index && total && (
+        <div class="project-meta__cap">
+          <span>Project index</span>
+          <span class="num">
+            {pad2(index)} / {pad2(total)}
+          </span>
+        </div>
+      )
+    }
+
+    <dl class="meta-list">
+      <div class="meta-line" data-line></div>
+
+      {
+        role.length > 0 && (
+          <>
+            <div class="meta-row" style="--i:0">
+              <dt>Role</dt>
+              <dd>
+                <ul class="meta-values">
+                  {role.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+            <div class="meta-line" data-line />
+          </>
+        )
+      }
+
+      {
+        tools.length > 0 && (
+          <>
+            <div class="meta-row" style="--i:1">
+              <dt>Tools</dt>
+              <dd>
+                <ul class="meta-values">
+                  {tools.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+            <div class="meta-line" data-line />
+          </>
+        )
+      }
+
+      <div class="meta-row meta-row--year" style="--i:2">
+        <dt>Year</dt>
+        <dd>
+          <ul class="meta-values">
+            <li>{year}</li>
+          </ul>
+        </dd>
       </div>
-    </div>
-    <div class="flex flex-col items-start sm:items-center">
-      <h1 class="text-sm">Tools</h1><div
-        class="flex flex-col sm:flex-wrap sm:flex-row justify-start sm:justify-center"
-      >
-        {
-          tools.map((item) => (
-            <p class="mx-0 sm:mx-2">
-              <TextEffectLine blockColor="#1d1d1d">{item}</TextEffectLine>
-            </p>
-          ))
-        }
-      </div>
-    </div>
-    <div class="flex flex-col items-start sm:items-end">
-      <h1 class="text-sm">Year</h1><div class="flex flex-wrap">
-        <p>
-          <TextEffectLine blockColor="#1d1d1d">{year}</TextEffectLine>
-        </p>
-      </div>
-    </div>
+      <div class="meta-line" data-line></div>
+    </dl>
+
+    {
+      (liveLink || githubLink) && (
+        <div class="meta-links">
+          {liveLink && (
+            <>
+              <a
+                class="meta-row meta-link"
+                style="--i:3"
+                href={liveLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="meta-link__label">Live</span>
+                <span class="swap">
+                  <span>Visit the site</span>
+                  <span aria-hidden="true">{displayUrl(liveLink)}</span>
+                </span>
+                <span class="meta-link__mark" aria-hidden="true">
+                  <svg class="meta-link__mark-circle" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="18" />
+                  </svg>
+                  <span class="meta-link__mark-arrow">↗</span>
+                </span>
+              </a>
+              <div class="meta-line" data-line />
+            </>
+          )}
+
+          {githubLink && (
+            <>
+              <a
+                class="meta-row meta-link"
+                style="--i:4"
+                href={githubLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="meta-link__label">Source</span>
+                <span class="swap">
+                  <span>View repository</span>
+                  <span aria-hidden="true">{displayUrl(githubLink)}</span>
+                </span>
+                <span class="meta-link__mark" aria-hidden="true">
+                  <svg class="meta-link__mark-circle" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="18" />
+                  </svg>
+                  <span class="meta-link__mark-arrow">↗</span>
+                </span>
+              </a>
+              <div class="meta-line" data-line />
+            </>
+          )}
+        </div>
+      )
+    }
   </div>
 
-  <div class="max-w-200 about-info-text">
-    <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
-      <TextEffectLine mixBlend align="center" blockColor="#141314">
-        {info}
-      </TextEffectLine>
-    </span>
-  </div>
+  {
+    info && (
+      <div class="max-w-200 about-info-text mx-auto">
+        <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-center block">
+          {info}
+        </span>
+      </div>
+    )
+  }
 </section>
 
-<script>
-  function updateInfoAlign() {
-    const container = document.querySelector<HTMLElement>(
-      ".about-info-text .text-reveal-container",
-    );
-    if (!container) return;
-    const align: "center" | "right" =
-      window.innerWidth < 640 ? "right" : "center";
-    container.dataset.align = align;
+<style>
+  /* =========================================================
+     PROJECT META — «Индекс-таблица»
+     ========================================================= */
+  .project-meta {
+    --pm-ink: #101114;
+    --pm-label: #6a675d;
+    --pm-muted: #8e8a7c;
+    --pm-line: rgba(28, 28, 26, 0.22);
+    --pm-hover: rgba(0, 0, 0, 0.05);
+    --pm-pad-x: clamp(1.25rem, 5vw, 5rem);
+    --pm-pad-y: clamp(2rem, 4vw, 3.25rem);
+    --pm-label-col: clamp(4.5rem, 9vw, 8rem);
+    --pm-value: clamp(1.35rem, 3.4vw, 2.6rem);
+
+    position: relative;
+    padding: var(--pm-pad-y) var(--pm-pad-x) calc(var(--pm-pad-y) * 1.5);
+    color: var(--pm-ink);
   }
 
-  updateInfoAlign();
-  window.addEventListener("resize", updateInfoAlign);
-  document.addEventListener("astro:after-swap", updateInfoAlign);
+  .project-meta__inner {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .project-meta__cap {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: clamp(1.25rem, 2.6vw, 2rem);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--pm-label);
+  }
+  .project-meta__cap .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meta-list {
+    margin: 0;
+  }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: var(--pm-label-col) 1fr;
+    gap: clamp(1rem, 2.4vw, 2.5rem);
+    align-items: baseline;
+    padding: clamp(1rem, 2.2vw, 1.75rem) clamp(0.5rem, 1.2vw, 1rem)
+      clamp(1rem, 2.2vw, 1.75rem) 0;
+  }
+
+  .meta-line {
+    width: 0%;
+    height: 1px;
+    background-color: var(--pm-line);
+  }
+
+  .meta-row dt {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--pm-label);
+  }
+
+  .meta-row dd {
+    margin: 0;
+  }
+
+  .meta-links {
+    margin: 0;
+  }
+
+  .meta-link {
+    position: relative;
+    isolation: isolate;
+    grid-template-columns: var(--pm-label-col) 1fr auto;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .meta-link::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background-color: var(--pm-hover);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .meta-link:hover::before,
+  .meta-link:focus-visible::before {
+    opacity: 1;
+  }
+  .meta-link:focus-visible {
+    outline: 2px solid var(--pm-ink);
+    outline-offset: -2px;
+  }
+
+  .meta-link__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--pm-label);
+  }
+
+  .swap {
+    justify-self: start;
+    position: relative;
+    overflow: hidden;
+    height: 1.16em;
+    font-size: var(--pm-value);
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: -0.035em;
+  }
+  .swap span {
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .swap span + span {
+    color: var(--pm-label);
+  }
+  .meta-link:hover .swap span,
+  .meta-link:focus-visible .swap span {
+    transform: translateY(-100%);
+  }
+
+  .meta-link__mark {
+    position: relative;
+    align-self: center;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pm-muted);
+    transition: color 0.5s ease;
+  }
+  .meta-link:hover .meta-link__mark,
+  .meta-link:focus-visible .meta-link__mark {
+    color: var(--pm-ink);
+  }
+
+  .meta-link__mark-circle {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    overflow: visible;
+  }
+  .meta-link__mark-circle circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-dasharray: 113;
+    stroke-dashoffset: 113;
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .meta-link:hover .meta-link__mark-circle circle,
+  .meta-link:focus-visible .meta-link__mark-circle circle {
+    stroke-dashoffset: 0;
+  }
+
+  .meta-link__mark-arrow {
+    position: relative;
+    font-size: 1.8rem;
+    line-height: 1;
+    transition: font-size 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .meta-link:hover .meta-link__mark-arrow,
+  .meta-link:focus-visible .meta-link__mark-arrow {
+    font-size: 1.2rem;
+  }
+
+  .meta-values {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2em 0;
+  }
+  .meta-values li {
+    font-size: var(--pm-value);
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: -0.035em;
+    display: flex;
+    align-items: baseline;
+  }
+  .meta-values li:not(:last-child)::after {
+    content: "/";
+    margin: 0 0.55em;
+    font-size: 0.5em;
+    font-weight: 400;
+    color: var(--pm-muted);
+    transform: translateY(-0.18em);
+  }
+  .meta-row--year .meta-values li {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 640px) {
+    .project-meta {
+      --pm-value: 1.25rem;
+    }
+
+    .meta-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem 1rem;
+    }
+    .meta-row dt,
+    .meta-link__label {
+      grid-column: 1 / -1;
+    }
+    .meta-link {
+      grid-template-columns: 1fr auto;
+    }
+    .swap {
+      word-break: break-word;
+    }
+
+    .meta-values {
+      flex-direction: column;
+      gap: 0.12em;
+    }
+    .meta-values li:not(:last-child)::after {
+      content: none;
+    }
+  }
+</style>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initProjectMeta() {
+    const section = document.querySelector<HTMLElement>(".project-meta");
+    if (!section || section.dataset.metaInit) return;
+    section.dataset.metaInit = "true";
+
+    const rows = gsap.utils.toArray<HTMLElement>(".project-meta .meta-row");
+    const lines = gsap.utils.toArray<HTMLElement>(".project-meta .meta-line");
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduceMotion) {
+      gsap.set(rows, { opacity: 1, y: 0 });
+      gsap.set(lines, { width: "100%" });
+      return;
+    }
+
+    gsap.set(rows, { opacity: 0, y: 14 });
+    gsap.set(lines, { width: "0%" });
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top 80%",
+      once: true,
+      onEnter: () => {
+        gsap.to(rows, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          stagger: 0.09,
+          ease: "power2.out",
+        });
+      },
+    });
+
+    lines.forEach((line) => {
+      ScrollTrigger.create({
+        trigger: line,
+        start: "top 90%",
+        once: true,
+        onEnter: () => {
+          gsap.to(line, {
+            width: "100%",
+            duration: 0.5,
+            ease: "power2.out",
+          });
+        },
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", initProjectMeta);
 </script>

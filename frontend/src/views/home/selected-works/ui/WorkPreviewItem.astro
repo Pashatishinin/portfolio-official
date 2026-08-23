@@ -2,12 +2,12 @@
 import FluidOverlay from "../../../../components/animation/FluidOverlay.astro";
 
 interface Props {
-  playbackId: string;
-  poster?: string;
+  poster?: string | null;
   link?: string;
 }
 
-const { playbackId, poster = "/1.avif", link } = Astro.props;
+const { poster, link } = Astro.props;
+const posterSrc = poster ?? "/1.avif";
 ---
 
 <div
@@ -15,5 +15,5 @@ const { playbackId, poster = "/1.avif", link } = Astro.props;
 >
   <a href={link} class="absolute inset-0 z-10 pointer-events-auto"></a>
 
-  <FluidOverlay image={poster} />
+  <FluidOverlay image={posterSrc} />
 </div>

@@ -2,8 +2,8 @@
 interface Props {
   award: string;
   result: string;
-  year?: string;
-  img?: string;
+  year?: string | null;
+  img?: string | null;
 }
 
 const { award, result, year, img } = Astro.props;

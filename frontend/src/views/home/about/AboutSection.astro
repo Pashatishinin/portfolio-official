@@ -1,12 +1,21 @@
 ---
+import { getAboutContent } from "../../../shared/api/home.api";
 import AboutText from "./ui/AboutText.astro";
 import AboutWaveImage from "./ui/AboutWaveImage.astro";
+
+const { bioText, extraText1, extraText2, extraText3, imageUrl } =
+  await getAboutContent();
 ---
 
 <section
     id="about"
     class="min-h-screen w-screen max-w-[1920px] mx-auto p-4 sm:p-8 lg:p-16"
 >
-    <AboutText />
-    <AboutWaveImage />
+    <AboutText
+      bioText={bioText}
+      extraText1={extraText1}
+      extraText2={extraText2}
+      extraText3={extraText3}
+    />
+    <AboutWaveImage imageUrl={imageUrl} />
 </section>

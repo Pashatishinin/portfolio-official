@@ -64,6 +64,7 @@
     scene.add(quad);
 
     const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
     const texCache = new Map<string, THREE.Texture>();
 
     let active = false;
@@ -71,7 +72,7 @@
     let lastTex: THREE.Texture = emptyTex;
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const SPEED = 0.012;
+    const SPEED = 0.022;
     const MAX_PROG = 0.88;
 
     function startShow(src: string) {
@@ -133,7 +134,7 @@
         .forEach((el) => {
           const src = el.dataset.achievementImg!;
 
-          if (!texCache.has(src)) {
+          if (src && !texCache.has(src)) {
             loader.load(src, (tex) => {
               tex.minFilter = THREE.LinearFilter;
               tex.generateMipmaps = false;
@@ -150,7 +151,6 @@
 
     setup();
 
-    // expose dispose for navigation cleanup
     const achCanvas = document.getElementById("achievement-hover-canvas") as HTMLCanvasElement;
     if (achCanvas) (achCanvas as any).__dispose = () => {
       renderer.dispose();
@@ -181,7 +181,7 @@
     height: 200px;
     transform: translate(calc(-75% - 24px), -125%);
     opacity: 0;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.2s ease;
     overflow: hidden;
   }
 

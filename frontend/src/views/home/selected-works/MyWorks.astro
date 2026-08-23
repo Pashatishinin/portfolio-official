@@ -1,6 +1,8 @@
 ---
-import { projects } from "../../../shared/data/projects.data";
+import { getProjects } from "../../../shared/api/project.api";
 import WorkPreviewItem from "./ui/WorkPreviewItem.astro";
+
+const projects = await getProjects();
 ---
 
 <section>
@@ -16,14 +18,14 @@ import WorkPreviewItem from "./ui/WorkPreviewItem.astro";
 
     <div class="project-images absolute top-0 left-[50%] translate-x-[-50%] w-[90%] sm:w-[65%] lg:w-[45%] py-[50svh] flex flex-col gap-[15svh] sm:gap-[20svh] lg:gap-2">
       {projects.map((p) => (
-        <WorkPreviewItem playbackId={p.playbackId} link={p.link} poster={p.img} />
+        <WorkPreviewItem link={`/project/${p.slug}`} poster={p.coverImageUrl} />
       ))}
     </div>
 
     <div class="project-names absolute right-4 sm:right-8 bottom-4 sm:bottom-8 flex flex-col items-end">
       {projects.map((p) => (
         <p class="project-name uppercase text-[1.1rem] sm:text-[1.6rem] lg:text-[2.0rem] leading-[125%] font-medium text-[#4a4a4a] transition-all duration-300 ease-in">
-          {p.name}
+          {p.headerTitle}
         </p>
       ))}
     </div>

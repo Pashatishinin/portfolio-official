@@ -1,28 +1,25 @@
 ---
 import { TextEffectLine } from "../../../components";
-import { achievements } from "../../../shared/data/achievements.data";
+import { getAchievements } from "../../../shared/api/home.api";
 import AchievementHoverImage from "./ui/AchievementHoverImage.astro";
 import AchievementItem from "./ui/AchievementItem.astro";
+
+const achievements = await getAchievements();
 ---
 
 <section
   id="achievement"
   class="relative w-full p-4 md:p-16 grid grid-cols-1 gap-12 lg:gap-20 max-w-[1920px] mx-auto"
 >
-  <!-- <div class="lg:sticky lg:top-16 h-fit">
-    <h1 class="font-accent italic text-5xl md:text-6xl text-main leading-[75%]">
-      <TextEffectLine mixBlend blockColor="var(--color-main)">My</TextEffectLine
-      >
-    </h1>
-    <h1 class="text-4xl md:text-5xl font-bold text-main leading-[75%]">
-      <TextEffectLine mixBlend blockColor="var(--color-main)"
-        >Achievement</TextEffectLine
-      >
-    </h1>
-  </div> -->
-
   <div class="flex flex-col w-full text-lg md:text-2xl text-main">
-    {achievements.map((item) => <AchievementItem {...item} />)}
+    {
+      achievements.map((item, i) => (
+        <AchievementItem
+          {...item}
+          year={item.year !== achievements[i - 1]?.year ? item.year : null}
+        />
+      ))
+    }
   </div>
 </section>
 

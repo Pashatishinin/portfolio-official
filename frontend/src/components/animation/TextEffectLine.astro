@@ -80,6 +80,10 @@ const paddingValue = title ? "0.15em" : "0.5em";
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.1s ease;
+    /* Contains the negative margin-bottom of the last .block-line-wrapper —
+       without a BFC here it collapses through into the next sibling
+       unpredictably, showing up as a random extra gap between blocks. */
+    display: flow-root;
   }
 
   .reveal-content.is-ready {
@@ -136,13 +140,33 @@ const paddingValue = title ? "0.15em" : "0.5em";
 
     if (pairs.length > 0) {
       let html = target.innerHTML;
+      // pairs are ordered end-of-text → start-of-text (loop above walks lines
+      // backwards), so we resolve them in the same direction: each fix only
+      // looks for its word-pair before the previous fix's position. Without
+      // this, a pair like "gave the" that repeats earlier in the paragraph
+      // would get nbsp'd at the WRONG occurrence, corrupting an unrelated
+      // line break instead of the intended orphan.
+      let searchEnd = html.length;
+      const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
       for (const [prev, orphan] of pairs) {
-        const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        html = html.replace(
-          new RegExp(`(${esc(prev)})\\s+(${esc(orphan)})`),
-          `$1${NBSP}$2`
-        );
+        const re = new RegExp(`${esc(prev)}\\s+${esc(orphan)}`, "g");
+        let match: RegExpExecArray | null;
+        let lastMatch: RegExpExecArray | null = null;
+
+        while ((match = re.exec(html))) {
+          if (match.index >= searchEnd) break;
+          lastMatch = match;
+        }
+
+        if (lastMatch) {
+          const start = lastMatch.index;
+          const end = start + lastMatch[0].length;
+          html = `${html.slice(0, start)}${prev}${NBSP}${orphan}${html.slice(end)}`;
+          searchEnd = start;
+        }
       }
+
       target.innerHTML = html;
     }
   }
@@ -255,8 +279,12 @@ const paddingValue = title ? "0.15em" : "0.5em";
 
   // Cleanup before DOM swap so GSAP doesn't reference stale nodes
   document.addEventListener("astro:before-swap", cleanupReveal);
-  // Wait one frame after swap so layout/fonts are ready before SplitText measures
-  document.addEventListener("astro:after-swap", () => requestAnimationFrame(initReveal));
+  // Wait for the real font to load before SplitText measures — otherwise
+  // it bakes in fallback-font metrics, which can permanently misalign
+  // characters (masked by overflow:hidden) until the next reload.
+  document.addEventListener("astro:after-swap", () => {
+    document.fonts.ready.then(initReveal);
+  });
 
-  initReveal();
+  document.fonts.ready.then(initReveal);
 </script>

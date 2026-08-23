@@ -1,5 +1,8 @@
 ---
 import { TextEffectLine } from "../../../components";
+import { getHeroContent } from "../../../shared/api/home.api";
+
+const { previewTextLeft, previewTextRight } = await getHeroContent();
 ---
 
 <section
@@ -11,9 +14,7 @@ import { TextEffectLine } from "../../../components";
       class="text-left font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%] text-main"
     >
       <TextEffectLine align="left" blockColor="#141314">
-        Independent developer based in Germany, bridging the gap between
-        high-end UI/UX and robust backend logic through pixel-perfect frontend
-        implementation.
+        {previewTextLeft}
       </TextEffectLine>
     </h2>
   </div>
@@ -23,8 +24,7 @@ import { TextEffectLine } from "../../../components";
       class="text-right font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%] text-main"
     >
       <TextEffectLine align="right" blockColor="#141314">
-        I transform complex ideas into aesthetically pleasing and user-friendly
-        digital solutions.
+        {previewTextRight}
       </TextEffectLine>
     </h2>
   </div>
@@ -35,6 +35,51 @@ import { TextEffectLine } from "../../../components";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
 
   gsap.registerPlugin(ScrollTrigger);
+
+  // Same shared three-crystal component as HeroSection — bumps the box
+  // (CSS) size a bit further while #preview is in view, on top of the
+  // existing model.scale=2 anchor from CrystalController, so the
+  // enlarged model isn't cramped inside the smaller resting box.
+  // Scrubbed via GSAP (not a hard onEnter/onLeave style snap) so the
+  // size eases up to the peak and back down instead of jump-cutting.
+  // Applied directly to the element (not a CSS class + stylesheet rule)
+  // because Object3D.astro's own scoped !important rule otherwise wins
+  // on specificity. Doesn't touch the preloader's own instance
+  // (different DOM position, never a direct body child).
+  const initCrystalPreviewScrub = () => {
+    const el = document.querySelector<HTMLElement>("body > three-crystal");
+    if (!el) return;
+
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    const previewSize = Math.min(Math.max(vmin * 0.99, 500), 2400);
+    // HeroSection.astro already set this on the same "astro:page-load"
+    // pass (it registers first), so this reads the actual resting size
+    // instead of re-deriving its formula here.
+    const restingSize = parseFloat(getComputedStyle(el).width) || previewSize;
+
+    // gsap.to(el, {width, ...}) writes a plain (non-!important) inline
+    // style, which loses to Object3D.astro's scoped `!important` rule the
+    // instant this tween takes over from HeroSection's own !important
+    // inline styles — the box was silently snapping back to the
+    // hardcoded 800px default every time this scrub became active.
+    // Tweening a plain state object and applying it manually via
+    // setProperty(..., "important") keeps priority on our side.
+    const state = { size: restingSize };
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: "#preview",
+        start: "top center",
+        end: "bottom center",
+        scrub: 1,
+      },
+      onUpdate: () => {
+        el.style.setProperty("width", `${state.size}px`, "important");
+        el.style.setProperty("height", `${state.size}px`, "important");
+      },
+    })
+      .to(state, { size: previewSize, ease: "none" })
+      .to(state, { size: restingSize, ease: "none" });
+  };
 
   const initAnimation = () => {
     ScrollTrigger.getAll().forEach((t) => {
@@ -56,6 +101,14 @@ import { TextEffectLine } from "../../../components";
         },
       });
     }
+
+    // Same "top center" / "bottom center" range as the fluid-color
+    // trigger above — "top bottom" fires almost immediately on any
+    // scroll because #hero (max-h-250) can be shorter than the
+    // viewport, so #preview's top already sits near the bottom edge
+    // at rest. That caused the box to jump size right as scrolling
+    // started instead of when preview actually came into view.
+    initCrystalPreviewScrub();
   };
 
   document.addEventListener("astro:page-load", initAnimation);

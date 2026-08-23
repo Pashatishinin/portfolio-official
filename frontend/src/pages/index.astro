@@ -1,5 +1,6 @@
 ---
 import { Object3D } from "../components";
+import CrystalController from "../components/animation/CrystalController.astro";
 import Layout from "../layouts/Layout.astro";
 import FooterSection from "../views/footer/FooterSection.astro";
 import HeaderSection from "../views/header/HeaderSection.astro";
@@ -7,8 +8,8 @@ import {
   AchievementSection,
   AllProjectsCta,
   AllProjectsSection,
-  ContactSection,
   HeroSection,
+  MilestonesSection,
   MyWorks,
   PreviewSection,
   SelectedWorksSection,
@@ -18,14 +19,15 @@ import ServiceSection from "../views/home/service/ServiceSection.astro";
 ---
 
 <Layout>
-  <!-- <Object3D /> -->
+  <Object3D transition:persist />
+  <CrystalController />
   <HeaderSection />
   <HeroSection />
   <!-- <PreviewSection /> -->
 
   <SelectedWorksSection />
   <!-- <AllProjectsSection /> -->
-  <ContactSection />
+  <MilestonesSection />
   <AboutSection />
   <AchievementSection />
   <!-- <ServiceSection /> -->

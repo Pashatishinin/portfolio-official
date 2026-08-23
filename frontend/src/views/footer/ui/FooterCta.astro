@@ -1,16 +1,19 @@
 ---
 import { TextEffect, TextEffectLine } from "../../../components";
+import { getFooterContact } from "../../../shared/api/home.api";
+
+const { email, footerCta } = await getFooterContact();
 ---
 
 <div class="footer-cta">
   <p class="mb-4">
     <TextEffectLine blockColor="var(--color-secondary)">
-      Don't be shy
+      {footerCta}
     </TextEffectLine>
   </p>
 
   <a
-    href="mailto:tishyninpavlo@gmail.com"
+    href={`mailto:${email}`}
     class="link group inline-flex cursor-pointer outline-none"
     aria-label="Send an email to Pavlo Tishynin"
   >

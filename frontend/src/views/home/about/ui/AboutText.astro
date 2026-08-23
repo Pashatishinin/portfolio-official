@@ -1,5 +1,17 @@
 ---
 import { TextEffectLine } from "../../../../components";
+
+interface Props {
+  bioText: string;
+  extraText1?: string | null;
+  extraText2?: string | null;
+  extraText3?: string | null;
+}
+
+const { bioText, extraText1, extraText2, extraText3 } = Astro.props;
+const extraTexts = [extraText1, extraText2, extraText3].filter(
+  (text): text is string => Boolean(text),
+);
 ---
 
 <div
@@ -15,11 +27,20 @@ import { TextEffectLine } from "../../../../components";
   <div class="w-[90vw] sm:w-auto sm:max-w-[80vw] lg:max-w-200">
     <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
       <TextEffectLine mixBlend align="center" blockColor="#141314">
-        As a creative web designer, I don't just sketch layouts but build real
-        products—like my own WebApp and a collection of fresh design
-        cases—turning complex ideas into sleek, standout interfaces where every
-        single pixel delivers results.
+        {bioText}
       </TextEffectLine>
     </span>
   </div>
+
+  {
+    extraTexts.map((text) => (
+      <div class="w-[90vw] sm:w-auto sm:max-w-[80vw] lg:max-w-200 mt-4">
+        <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
+          <TextEffectLine mixBlend align="center" blockColor="#141314">
+            {text}
+          </TextEffectLine>
+        </span>
+      </div>
+    ))
+  }
 </div>

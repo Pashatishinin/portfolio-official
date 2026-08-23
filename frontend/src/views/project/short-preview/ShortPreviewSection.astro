@@ -9,35 +9,49 @@ interface VideoItem {
 
 interface Props {
   listVideo?: VideoItem[];
+  info?: string;
 }
 
-const { listVideo = [] } = Astro.props;
+const { listVideo = [], info } = Astro.props;
 ---
 
-<section
-  id="short-preview"
-  class="relative w-full px-4 sm:px-16 pt-8 max-w-480 mx-auto bg-[#faf6f0]"
->
-  <div class="absolute inset-0 pointer-events-none z-0">
-    <div class="sticky top-0 h-screen flex flex-col justify-center p-16">
-      <h1
-        class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[64px] leading-[65%] -tracking-widest"
-      >
-        <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
-      </h1>
-      <h1
-        class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[100px] leading-[65%] -tracking-widest"
-      >
-        <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
-      </h1>
-    </div>
-  </div>
+{
+  listVideo.length > 0 && (
+    <section
+      id="short-preview"
+      class="relative w-full px-4 sm:px-16 pt-8 bg-[#faf6f0]"
+    >
+      {info && (
+        <div class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16">
+          <div class="max-w-200 about-info-text">
+            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
+              <TextEffectLine mixBlend align="center" blockColor="#141314">
+                {info}
+              </TextEffectLine>
+            </span>
+          </div>
+        </div>
+      )}
+      <div class="relative max-w-480 mx-auto">
+        <div class="absolute inset-0 pointer-events-none z-0">
+          <div class="sticky top-0 h-screen flex flex-col justify-center p-16">
+            <h1 class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[64px] leading-[65%] -tracking-widest">
+              <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
+            </h1>
+            <h1 class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[100px] leading-[65%] -tracking-widest">
+              <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
+            </h1>
+          </div>
+        </div>
 
-  <!-- Videos on top, provide scroll height -->
-  <div class="relative z-10 py-24">
-    <PreviewList listVideo={listVideo} />
-  </div>
-</section>
+        {/* Videos on top, provide scroll height */}
+        <div class="relative z-10 py-24">
+          <PreviewList listVideo={listVideo} />
+        </div>
+      </div>
+    </section>
+  )
+}
 
 <style>
   img {

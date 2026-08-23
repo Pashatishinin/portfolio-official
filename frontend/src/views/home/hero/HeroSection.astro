@@ -1,12 +1,19 @@
 ---
 import { TextEffect } from "../../../components";
+import { getHeroContent } from "../../../shared/api/home.api";
+
+const {
+  firstName: nameLine1,
+  lastName: nameLine2,
+  taglineLine1,
+  taglineLine2,
+} = await getHeroContent();
 ---
 
 <section
   id="hero"
   class="relative z-10 h-full max-h-250 min-h-[100vh] w-full max-w-[1920px] mx-auto"
 >
-
   <div
     class="px-4 sm:px-16 py-16 sm:py-32 2xl:py-54 flex flex-col justify-between min-h-screen h-full text-background"
   >
@@ -14,12 +21,12 @@ import { TextEffect } from "../../../components";
       <h1
         class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
       >
-        <TextEffect delay={0.2} wait>Creative </TextEffect>
+        <TextEffect delay={0.2} wait>{taglineLine1} </TextEffect>
       </h1>
       <h1
         class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
       >
-        <TextEffect delay={0.2} wait>Technologist </TextEffect>
+        <TextEffect delay={0.2} wait>{taglineLine2}</TextEffect>
       </h1>
     </div>
 
@@ -27,21 +34,32 @@ import { TextEffect } from "../../../components";
       <h1
         class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
       >
-        <TextEffect delay={0.2} wait>Pavlo</TextEffect>
+        <TextEffect delay={0.2} wait>{nameLine1}</TextEffect>
       </h1>
       <h1
         class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
       >
-        <TextEffect delay={0.2} wait>Tishynin</TextEffect>
+        <TextEffect delay={0.2} wait>{nameLine2}</TextEffect>
       </h1>
     </div>
   </div>
-
-  <div
-    class="moveCircle absolute bottom-[50%] sm:bottom-[15%] right-[50%] sm:right-[15%] translate-1/2 sm:translate-0"
-  >
-  </div>
 </section>
+
+<style is:global>
+  /* Object3D/three-crystal is a shared component (also used, separately,
+     inside PreLoader.astro) — canvas stretch only, scoped to the direct
+     body child instance from Layout.astro, so it can't affect the
+     preloader's own nested one. The box's own width/height/position are
+     set from the script below instead of here: Object3D.astro's own
+     scoped `!important` rule is compiled with an attribute selector
+     (Astro's data-astro-cid scoping), which outranks a plain selector
+     here by specificity even with !important — only an inline style set
+     with the "important" priority can reliably beat it. */
+  body > three-crystal .three-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+</style>
 
 <script>
   import gsap from "gsap";
@@ -49,86 +67,91 @@ import { TextEffect } from "../../../components";
 
   gsap.registerPlugin(ScrollTrigger);
 
-  const initHero = () => {
-    const oldTrigger = ScrollTrigger.getById("hero-scroll");
-    if (oldTrigger) oldTrigger.kill();
+  // Fixed 800x800 (set in Object3D.astro) read the same on every screen,
+  // so the object looked small/low on large monitors — scale the box
+  // with the viewport instead. Applied as inline !important styles
+  // because Object3D.astro's own scoped !important rule otherwise wins.
+  const applyResponsiveCrystalBox = () => {
+    const el = document.querySelector<HTMLElement>("body > three-crystal");
+    if (!el) return;
 
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const vmin = Math.min(vw, vh);
+    const size = Math.min(Math.max(vmin * 0.84, 420), 1950);
+    el.style.setProperty("width", `${size}px`, "important");
+    el.style.setProperty("height", `${size}px`, "important");
+
+    // The scroll-driven tween below animates top/left/xPercent/yPercent
+    // (never bottom/right), so the resting position is expressed in the
+    // same properties here — mixing bottom/right for rest with top/left
+    // for the scrubbed state made GSAP jump instead of interpolate the
+    // moment scroll started, and it got more visible once the object
+    // grew bigger. topPx/leftPx bake the current `size` in so the corner
+    // position is stable regardless of viewport aspect ratio.
+    const jellyTrigger = ScrollTrigger.getById("jelly-scroll");
+    if (jellyTrigger && jellyTrigger.progress > 0) return;
+
+    const bottomPct = vw >= 2200 ? 0 : vw >= 1600 ? -4 : -16;
+    const rightPct = vw >= 1600 ? 6 : 8;
+    const topPx = vh * (1 - bottomPct / 100) - size;
+    const leftPx = vw * (1 - rightPct / 100) - size;
+
+    el.style.setProperty("top", `${(topPx / vh) * 100}%`, "important");
+    el.style.setProperty("left", `${(leftPx / vw) * 100}%`, "important");
+    el.style.setProperty("bottom", "auto", "important");
+    el.style.setProperty("right", "auto", "important");
+  };
+  // Exposed so PreviewSection.astro can restore the resting hero size
+  // when scrolling back out of #preview, without duplicating the formula.
+  (window as any).initHeroCrystalBox = applyResponsiveCrystalBox;
+
+  const initHero = () => {
     const oldJellyTrigger = ScrollTrigger.getById("jelly-scroll");
     if (oldJellyTrigger) oldJellyTrigger.kill();
 
-    // "body > three-crystal", а не просто "three-crystal" — на странице
-    // теперь два инстанса: этот (прямой child body, из Layout.astro) и
-    // отдельный внутри PreLoader.astro (nested, поэтому под селектор не
-    // попадает). Без уточнения тег-селектор двигал бы оба сразу.
+    applyResponsiveCrystalBox();
+    window.addEventListener("resize", applyResponsiveCrystalBox);
 
-    // 1. Инициализируем стартовую позицию в углу (теперь без конфликтов с CSS)
     gsap.set("body > three-crystal", {
       rotation: -45,
       opacity: 0,
-      scale: 0.6,
-      // top: "auto",
-      // left: "auto",
-      bottom: "-10%",
-      right: "10%",
+      scale: 0,
       xPercent: 0,
       yPercent: 0,
     });
 
-    // 2. Интро-анимация (выплывание в рабочую позицию угла)
+    // HERO_DELAY (Layout.astro) сигналит, ждём ли ещё прелоадер: 3.6 —
+    // первая загрузка/reload (прелоадер показывается), 0.2 — обычный
+    // переход между страницами (прелоадера нет вообще). Без прелоадера
+    // объект должен появляться сразу и быстро, а не через долгую паузу,
+    // рассчитанную на время анимации прелоадера.
+    const hasPreloader = ((window as any).HERO_DELAY ?? 0.2) > 1;
+
     const introTl = gsap.timeline();
 
     introTl.to("body > three-crystal", {
       opacity: 1,
       scale: 1,
-      bottom: "-10%",
-      right: "10%",
-      duration: 1.8,
+      duration: hasPreloader ? 1.8 : 0.9,
       ease: "power3.out",
-      delay: 4,
+      delay: hasPreloader ? 4 : 0.3,
     });
 
-    // 3. Анимация скролла
-    let mm = gsap.matchMedia();
-    mm.add(
-      {
-        isDesktop: "(min-width: 640px)",
-        isMobile: "(max-width: 639px)",
+    gsap.to("body > three-crystal", {
+      top: "50%",
+      left: "50%",
+      xPercent: -50,
+      yPercent: -50,
+      rotation: 0,
+      scrollTrigger: {
+        id: "jelly-scroll",
+        trigger: "#hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: 1.8,
       },
-      (context) => {
-        let { isMobile }: any = context.conditions;
-
-        gsap.to(".moveCircle", {
-          y: isMobile ? 500 : 200,
-          scrollTrigger: {
-            id: "hero-scroll",
-            trigger: "#hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: 1.5,
-          },
-        });
-
-        // Движение в центр
-        gsap.to("body > three-crystal", {
-          top: "50%",
-          left: "50%",
-          xPercent: -50,
-          yPercent: -50,
-          bottom: "auto",
-          right: "auto",
-          rotation: 0,
-          // Очищаем старые интро-параметры bottom/right во время работы скролла
-          clearProps: "bottom,right",
-          scrollTrigger: {
-            id: "jelly-scroll",
-            trigger: "#hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: 1.8,
-          },
-        });
-      },
-    );
+    });
 
     ScrollTrigger.refresh();
   };
