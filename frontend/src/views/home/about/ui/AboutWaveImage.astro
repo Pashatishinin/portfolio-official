@@ -6,10 +6,10 @@ interface Props {
 const { imageUrl } = Astro.props;
 ---
 
-<div class="h-[150svh] flex justify-center">
+<div class="flex justify-center items-center w-full h-full">
   <div
     id="about-img-wrap"
-    class="w-56 sm:w-64 md:w-72 lg:w-80 -z-1 opacity-50"
+    class="w-56 sm:w-64 md:w-72 lg:w-80 opacity-50 pointer-events-auto"
     style="overflow:visible"
     data-image-url={imageUrl}
   >
@@ -123,10 +123,12 @@ const { imageUrl } = Astro.props;
 
     const proxy = { amp: 0 };
 
+    // 1. Анимация волн от скролла
     ScrollTrigger.create({
       trigger: "#about",
       start: "top bottom",
       end: "bottom top",
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         const p = self.progress;
         const amp =
@@ -140,6 +142,7 @@ const { imageUrl } = Astro.props;
       },
     });
 
+    // 2. Поворот Mesh 3D-модели
     gsap.fromTo(
       mesh.rotation,
       { z: -0.1 },
@@ -151,6 +154,24 @@ const { imageUrl } = Astro.props;
           start: "top bottom",
           end: "bottom top",
           scrub: 1.5,
+          invalidateOnRefresh: true,
+        },
+      },
+    );
+
+    // 3. Движение обертки картинки СНИЗУ ВВЕРХ при скролле секции #about
+    gsap.fromTo(
+      wrap,
+      { y: "120vh" }, // Старт: вылетает снизу из-за экрана
+      {
+        y: "-120vh", // Конец: улетает вверх за экран
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#about",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+          invalidateOnRefresh: true,
         },
       },
     );
