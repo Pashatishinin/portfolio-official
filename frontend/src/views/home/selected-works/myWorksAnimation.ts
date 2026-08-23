@@ -2,6 +2,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 let spotlightTrigger: ScrollTrigger | null = null;
 let resizeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -34,12 +35,16 @@ export function initMyWorks() {
 	const moveDistanceImages = window.innerHeight - imagesContainer.offsetHeight;
 	const imgActivationThreshold = window.innerHeight / 2;
 
+	const initialVh = window.innerHeight;
+
 	spotlightTrigger = ScrollTrigger.create({
 		trigger: ".spotlight",
 		start: "top top",
-		end: `+=${window.innerHeight * 5}px`,
+		end: () => `+=${initialVh * (isMobile ? 3 : 5)}px`,
 		pin: true,
 		pinSpacing: true,
+		anticipatePin: 1,
+		invalidateOnRefresh: true,
 		scrub: true,
 		onUpdate(self) {
 			const progress = self.progress;

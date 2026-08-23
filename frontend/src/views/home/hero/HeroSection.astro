@@ -46,6 +46,7 @@ const {
         <TextEffect delay={0.2} wait>{nameLine2}</TextEffect>
       </h1>
     </div>
+    <div class="hint">scroll down ↓</div>
   </div>
 </section>
 
@@ -80,8 +81,32 @@ const {
     const jellyTrigger = ScrollTrigger.getById("jelly-scroll");
     if (jellyTrigger && jellyTrigger.progress > 0) return;
 
-    const bottomPct = vw >= 2200 ? 0 : vw >= 1600 ? -4 : -16;
-    const rightPct = vw >= 1600 ? 6 : 8;
+    // const bottomPct = vw >= 2200 ? 0 : vw >= 1600 ? -4 : -16;
+    // const rightPct = vw >= 1600 ? 6 : 8;
+    let bottomPct: number;
+    let rightPct: number;
+
+    if (vw >= 2200) {
+      // Ultra-wide
+      bottomPct = 0;
+      rightPct = 2;
+    } else if (vw >= 1600) {
+      // Large Desktop
+      bottomPct = -4;
+      rightPct = 3;
+    } else if (vw >= 1024) {
+      // Desktop / Laptop
+      bottomPct = -8;
+      rightPct = 3;
+    } else if (vw >= 768) {
+      // Tablets
+      bottomPct = -12;
+      rightPct = 2;
+    } else {
+      // Mobile (< 768px) — опускаем ниже или центрируем при необходимости
+      bottomPct = -18;
+      rightPct = -5;
+    }
     const topPx = vh * (1 - bottomPct / 100) - size;
     const leftPx = vw * (1 - rightPct / 100) - size;
 
@@ -119,7 +144,7 @@ const {
     const introTl = gsap.timeline();
 
     introTl.to("body > three-crystal", {
-      opacity: 1,
+      opacity: 0.5,
       scale: 1,
       duration: hasPreloader ? 1.8 : 0.9,
       ease: "power3.out",
@@ -138,6 +163,7 @@ const {
         start: "top top",
         end: "bottom top",
         scrub: 1.8,
+        invalidateOnRefresh: true,
       },
     });
 
@@ -146,3 +172,43 @@ const {
 
   document.addEventListener("astro:page-load", initHero);
 </script>
+<style>
+  .hint {
+    position: absolute;
+    left: 50%;
+    bottom: 4rem;
+    /* Центрируем элемент с помощью translate */
+    transform: translate(-50%, 0);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8b8880;
+    animation: bob 2.4s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%,
+    100% {
+      /* Сохраняем -50% по оси X в анимации, чтобы центрирование не сбрасывалось */
+      transform: translate(-50%, 0);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translate(-50%, 5px);
+      opacity: 1;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .hint {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hint {
+      animation: none;
+    }
+  }
+</style>

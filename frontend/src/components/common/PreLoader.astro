@@ -67,24 +67,74 @@ import TextEffect from "../animation/TextEffect.astro";
         const crystal = document.querySelector<any>(".preloader three-crystal");
         if (!crystal) return;
 
-        const setupCrystal = () => {
-          crystal.target.rotationX = -Math.PI / 2;
-          crystal.target.scale = 0;
-          gsap.to(crystal.target, {
-            scale: 1,
-            delay: 0.9,
-            duration: 0.5,
-            ease: "back.out(1.7)",
-          });
+        // const setupCrystal = () => {
+        //   if (!crystal.target) return;
+
+        //   // 1. Используем gsap.set вместо принудительного присвоения = 0
+        //   gsap.set(crystal.target, {
+        //     rotationX: -Math.PI / 2,
+        //     scale: 0,
+        //   });
+
+        //   // 2. Запускаем анимацию проявления
+        //   gsap.to(crystal.target, {
+        //     scale: 1,
+        //     delay: 0.9,
+        //     duration: 0.6,
+        //     ease: "back.out(1.7)",
+        //     overwrite: "auto", // Очищает конфликтные твины, если они были
+        //   });
+        // };
+
+        // if (crystal.model) {
+        //   setupCrystal();
+        // } else {
+        //   window.addEventListener(
+        //     "crystal:ready",
+        //     (e: Event) => {
+        //       if ((e as CustomEvent).detail.element === crystal) {
+        //         setupCrystal();
+        //       }
+        //     },
+        //     { once: true },
+        //   );
+        // }
+        const startAnimation = () => {
+          // 1. Убеждаемся, что поворот зафиксирован
+          if (crystal.target) {
+            crystal.target.rotationX = -Math.PI / 2;
+            crystal.target.scale = 1; // Оставляем базовый масштаб Three.js равным 1
+          }
+
+          // 2. Анимируем появление самого WebGL-контейнера через GSAP
+          gsap.fromTo(
+            crystal,
+            {
+              scale: 0,
+              opacity: 0,
+            },
+            {
+              scale: 1,
+              opacity: 0.5,
+              delay: 0.8,
+              duration: 0.8,
+              ease: "back.out(1.7)",
+              onStart: () => {
+                crystal.classList.remove("opacity-0");
+              },
+            },
+          );
         };
 
-        if (crystal.model) {
-          setupCrystal();
+        // Проверка готовности модели и трехмерной сцены
+        if (crystal.model && crystal.target) {
+          // Маленький таймаут гарантирует, что Three.js завершил первый кадр рендера
+          setTimeout(startAnimation, 50);
         } else {
           window.addEventListener(
             "crystal:ready",
-            (e: Event) => {
-              if ((e as CustomEvent).detail.element === crystal) setupCrystal();
+            () => {
+              setTimeout(startAnimation, 50);
             },
             { once: true },
           );
