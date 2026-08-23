@@ -1,0 +1,18 @@
+/* Styles for views/project/short-preview/ui/PreviewList.astro */
+
+.preview-section {
+  overflow: hidden;
+}
+
+.preview-video-item {
+  width: 40vw;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .preview-video-item {
+    width: 80vw;
+  }
+}

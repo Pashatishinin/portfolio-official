@@ -62,6 +62,7 @@
     };
 
     connectedCallback() {
+      if (window.innerWidth < 640) return;
       if (this.initialized) return;
       this.initialized = true;
 
@@ -106,6 +107,8 @@
 
       const loader = new GLTFLoader();
       loader.load(
+        // Лёгкая версия лежит рядом: "/object/scene.glb" (3.5 МБ) и
+        // "/object/scene-512.glb" (2.7 МБ) — переключается заменой этой строки.
         "/object/scene.gltf",
         (gltf) => {
           this.model = gltf.scene ?? gltf.scenes[0];
@@ -280,8 +283,7 @@
         this.renderer.domElement.remove();
       }
       const crystals = (window as any).crystalInstances as
-        | ThreeCrystal[]
-        | undefined;
+        ThreeCrystal[] | undefined;
       if (crystals) {
         const idx = crystals.indexOf(this);
         if (idx !== -1) crystals.splice(idx, 1);

@@ -22,6 +22,7 @@ import { ClientRouter } from "astro:transitions";
     <PreLoader />
     <!-- <PageTransition /> -->
     <div id="page-overlay" transition:persist></div>
+    <div id="footer-bg-fade" transition:persist aria-hidden="true"></div>
     <FluidScene transition:persist client:visible />
     <SmoothScroll />
     <slot />
@@ -41,6 +42,86 @@ import { ClientRouter } from "astro:transitions";
     scroll-behavior: smooth;
     overflow-x: clip;
     margin: 0 auto;
+    background-color: #faf6f0;
+  }
+
+  /* Фоновые градиенты и шумы только для экранов меньше 640px (мобильные) */
+  @media (max-width: 639px) {
+    body {
+      transition: background-image 0.8s ease;
+      background:
+        radial-gradient(
+          55% 40% at 20% 15%,
+          #e9e2d3 0%,
+          rgba(233, 226, 211, 0) 65%
+        ),
+        radial-gradient(
+          60% 45% at 75% 30%,
+          #ded7c8 0%,
+          rgba(222, 215, 200, 0) 70%
+        ),
+        radial-gradient(
+          50% 35% at 35% 65%,
+          #eee7d9 0%,
+          rgba(238, 231, 217, 0) 60%
+        ),
+        radial-gradient(
+          65% 50% at 80% 80%,
+          #e4ddd0 0%,
+          rgba(228, 221, 208, 0) 65%
+        ),
+        linear-gradient(
+          145deg,
+          #d8dbdc 0%,
+          #e5ded2 25%,
+          #d1d5d7 50%,
+          #e8e1d5 75%,
+          #cfd3d6 100%
+        );
+      background-attachment: fixed;
+    }
+
+    /* Градиент при видимом футере на мобильных.
+       Подогнан под десктопный вид (FluidScene + зерно) замерами скриншота:
+       средний тон #2B2928, разброс по кадру ~7 единиц яркости, зерно σ≈6.0.
+       Этот вариант при рендере даёт #2B2827, разброс 8, σ 6.4.
+       Прошлая версия была на 20 единиц темнее и уходила в холодный синий
+       (#18191a — синий канал выше красного), поэтому не совпадала. */
+    body.footer-active {
+      background:
+        radial-gradient(75% 60% at 18% 12%, #2c2a27 0%, rgba(0, 0, 0, 0) 72%),
+        radial-gradient(65% 55% at 82% 30%, #272522 0%, rgba(0, 0, 0, 0) 70%),
+        radial-gradient(70% 60% at 30% 78%, #252221 0%, rgba(0, 0, 0, 0) 68%),
+        linear-gradient(150deg, #272522 0%, #252221 45%, #232120 100%) !important;
+      background-attachment: fixed !important;
+    }
+
+    /* Сплошной чёрный слой — приём для десктопа: он fixed и рисуется поверх
+       фона body, поэтому на мобильных полностью перекрыл бы градиент выше
+       и в футере получался бы плоский #0d0d0d. Здесь он не нужен —
+       переход делает CSS через .footer-active. */
+    #footer-bg-fade {
+      display: none;
+    }
+
+    /* На тёмной подложке overlay сильно гасит зерно: тот же шум даёт σ≈3
+       вместо нужных 6. Поэтому в футере берём его же, но с поднятым
+       контрастом — feComponentTransfer slope 2.6. Светлый фон не трогаем. */
+    body.footer-active::after {
+      opacity: 0.9;
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27200%27%20height%3D%27200%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.9%27%20numOctaves%3D%274%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20type%3D%27saturate%27%20values%3D%270%27%2F%3E%3CfeComponentTransfer%3E%3CfeFuncR%20type%3D%27linear%27%20slope%3D%272.6%27%20intercept%3D%27-0.8%27%2F%3E%3CfeFuncG%20type%3D%27linear%27%20slope%3D%272.6%27%20intercept%3D%27-0.8%27%2F%3E%3CfeFuncB%20type%3D%27linear%27%20slope%3D%272.6%27%20intercept%3D%27-0.8%27%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D%27200%27%20height%3D%27200%27%20filter%3D%27url%28%23n%29%27%2F%3E%3C%2Fsvg%3E");
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.85;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
   }
 
   .preloader-visited .preloader {
@@ -60,6 +141,24 @@ import { ClientRouter } from "astro:transitions";
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease;
+  }
+
+  /* Плавный переход в чёрный при приближении к футеру — solid-цвет
+     поверх текущего фона через opacity вместо интерполяции
+     background-color: RGB-интерполяция проходит через "грязные"
+     промежуточные серые оттенки и на глаз выглядит неравномерно/резко,
+     тогда как fade сплошного чёрного слоя воспринимается линейно.
+     z-index: -1 — ниже любого обычного (непозиционированного)
+     контента, включая сам текст футера, который иначе перекрыло бы:
+     непозиционированные block-элементы всегда рисуются раньше
+     spositioned-элементов с z-index >= 0, но позже отрицательного. */
+  #footer-bg-fade {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #0d0d0d;
+    opacity: 0;
+    pointer-events: none;
   }
 
   ::view-transition-new(root) {
@@ -112,5 +211,55 @@ import { ClientRouter } from "astro:transitions";
     document.documentElement.style.removeProperty("--vt-anim");
     const overlay = document.getElementById("page-overlay");
     if (overlay) overlay.style.opacity = "0";
+  });
+</script>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Плавный переход в чёрный при приближении к футеру (десктоп/
+  // планшет). Раньше пробовали gsap.to(body, {backgroundColor}) —
+  // и разовым твином по IntersectionObserver, и через scrub — но
+  // RGB-интерполяция между светлым и тёмным цветом на глаз всё
+  // равно выглядит неравномерно (проходит через "грязную" серую
+  // середину). Вместо этого плавно проявляем сплошной чёрный слой
+  // (#footer-bg-fade, см. <style> выше) через opacity — тот же
+  // scrub-паттерн, что уже используется для цвета фона в
+  // PreviewSection.astro и для размера/поворота кристалла.
+  // На мобильных (<640px) фон — составной градиент, а не сплошной
+  // цвет: GSAP не умеет интерполировать между двумя разными
+  // градиентами, поэтому там переход остаётся на CSS (см.
+  // media-запрос в <style> выше) — .footer-active переключается тут
+  // же, отдельно от GSAP-scrub.
+  function initFooterFade() {
+    ScrollTrigger.getById("footer-fade")?.kill();
+
+    const fade = document.getElementById("footer-bg-fade");
+    const footer = document.querySelector("footer");
+    if (!fade || !footer) return;
+
+    gsap.set(fade, { opacity: 0 });
+
+    gsap.to(fade, {
+      opacity: 1,
+      scrollTrigger: {
+        id: "footer-fade",
+        trigger: footer,
+        start: "top bottom",
+        end: "top 60%",
+        scrub: 0.5,
+        // markers: true,
+        onEnter: () => document.body.classList.add("footer-active"),
+        onLeaveBack: () => document.body.classList.remove("footer-active"),
+      },
+    });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initFooterFade();
+    ScrollTrigger.refresh();
   });
 </script>

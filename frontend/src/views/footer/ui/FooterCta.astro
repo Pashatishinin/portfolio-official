@@ -7,24 +7,26 @@ const { email, footerCta } = await getFooterContact();
 
 <div class="footer-cta">
   <p class="mb-4">
-    <TextEffectLine blockColor="var(--color-secondary)">
+    <TextEffectLine blockColor="var(--color-secondary)" mixBlend>
       {footerCta}
     </TextEffectLine>
   </p>
 
   <a
     href={`mailto:${email}`}
-    class="link group inline-flex cursor-pointer outline-none"
+    class="link group inline-flex cursor-pointer outline-none mix-blend-difference"
     aria-label="Send an email to Pavlo Tishynin"
   >
     <div class="flex flex-wrap">
       <h1
         class="font-accent text-[clamp(60px,10vw,100px)] text-white -tracking-widest leading-[75%] group-hover:-translate-y-2 transition-transform duration-500"
+        aria-label="Say"
       >
         <TextEffect>Say</TextEffect>
       </h1>
       <h1
         class="text-[clamp(60px,10vw,100px)] text-white -tracking-widest leading-[75%] group-hover:-translate-y-2 transition-transform duration-500 delay-75 ml-4"
+        aria-label="Hello"
       >
         <TextEffect>Hello</TextEffect>
       </h1>

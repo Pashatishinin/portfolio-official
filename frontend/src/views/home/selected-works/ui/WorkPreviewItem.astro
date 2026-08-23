@@ -4,16 +4,39 @@ import FluidOverlay from "../../../../components/animation/FluidOverlay.astro";
 interface Props {
   poster?: string | null;
   link?: string;
+  name?: string;
 }
 
-const { poster, link } = Astro.props;
+const { poster, link, name } = Astro.props;
 const posterSrc = poster ?? "/1.avif";
 ---
 
 <div
-  class="relative w-full aspect-video opacity-[0.5] transition-all duration-300 ease-in overflow-hidden"
+  class="work-preview relative w-full aspect-video opacity-[0.5] transition-all duration-300 ease-in overflow-hidden"
 >
-  <a href={link} class="absolute inset-0 z-10 pointer-events-auto"></a>
+  {
+    /*
+    Две подачи одной обложки, взаимоисключающие по медиазапросу:
+      • десктоп с курсором — работает шейдер FluidOverlay, <img> скрыт;
+      • всё остальное      — канвас скрыт, видна статичная картинка.
+    Файл один и тот же, так что лишнего запроса не возникает:
+    шейдер грузит ровно этот же URL себе в текстуру.
+  */
+  }
+  <img
+    src={posterSrc}
+    alt=""
+    width="1600"
+    height="900"
+    loading="lazy"
+    decoding="async"
+    class="work-preview__poster absolute inset-0 w-full h-full object-cover"
+  />
+
+  <a
+    href={link}
+    class="absolute inset-0 z-10 pointer-events-auto"
+    aria-label={`View ${name}`}></a>
 
   <FluidOverlay image={posterSrc} />
 </div>

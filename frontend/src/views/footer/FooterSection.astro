@@ -3,16 +3,16 @@ import FooterCta from "./ui/FooterCta.astro";
 import FooterSocials from "./ui/FooterSocials.astro";
 ---
 
-<section
+<footer
   id="footer"
-  class="text-white w-full h-125 py-8 px-4 sm:p-16 flex flex-col justify-end relative max-w-[1920px] mx-auto"
+  class="text-white w-full min-h-125 py-8 px-4 sm:p-16 flex flex-col justify-end relative max-w-[1920px] mx-auto"
 >
   <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-10 sm:gap-12">
     <FooterCta />
 
     <FooterSocials />
   </div>
-</section>
+</footer>
 
 <script>
   import { gsap } from "gsap";

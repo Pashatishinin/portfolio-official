@@ -39,25 +39,6 @@ const { listVideo = [] } = Astro.props;
     </div>
 </section>
 
-<style>
-    .preview-section {
-        overflow: hidden;
-    }
-
-    .preview-video-item {
-        width: 40vw;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    @media (max-width: 768px) {
-        .preview-video-item {
-            width: 80vw;
-        }
-    }
-</style>
-
 <script>
     import gsap from "gsap";
     import { ScrollTrigger } from "gsap/ScrollTrigger";

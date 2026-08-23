@@ -4,21 +4,23 @@ import TextEffect from "../animation/TextEffect.astro";
 ---
 
 <section
-  class="fixed top-0 left-0 preloader z-200000 w-screen h-screen bg-[#131313] flex flex-col justify-center items-center"
+  class="fixed inset-0 preloader z-200000 bg-[#131313] flex flex-col justify-center items-center"
 >
   <Object3D />
 
   <div
-    class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[300px] lg:gap-[400px] px-6"
+    class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[100px] sm:gap-[400px] px-6"
   >
     <div class="block text-center lg:text-right">
       <h1
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+        aria-label="Pavlo"
       >
         <TextEffect delay={0.6}>Pavlo</TextEffect>
       </h1>
       <h1
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+        aria-label="Tishynin"
       >
         <TextEffect delay={0.7}>Tishynin</TextEffect>
       </h1>
@@ -27,46 +29,17 @@ import TextEffect from "../animation/TextEffect.astro";
     <div class="block text-center lg:text-left">
       <h1
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+        aria-label="Creative"
       >
         <TextEffect delay={0.6}>Creative</TextEffect>
       </h1>
       <h1
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
+        aria-label="Technologist"
       >
         <TextEffect delay={0.7}>Technologist</TextEffect>
       </h1>
     </div>
-
-    <!-- <div
-      class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10"
-    > -->
-    <!-- ?xml version="1.0" encoding="UTF-8"? -->
-    <!-- <svg
-        id="a"
-        class="preloader-svg w-[250px] h-[250px] opacity-0"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 274.54 280.05"
-        ><defs
-          ><style>
-            .b {
-              fill: transparent;
-              stroke: #eeeeee;
-              stroke-miterlimit: 10;
-              stroke-width: 3.08px;
-              stroke-linecap: round;
-              stroke-linejoin: round;
-            }
-          </style></defs
-        ><path
-          class="preloader-stroke b"
-          d="M87.46,10.48c2.01,15.26,3.45,37.23,0,63.2-2.31,17.4-6.98,32.1-16.21,60.77-19.07,59.25-29.88,73.45-38.89,82.65-9.57,9.76-25.2,22.15-29.98,18.64-.9-.66-4.22-3.94,4.86-25.93C28.19,159.08,99.03,47.81,117.44,58.29c17.34,9.87-22.44,121.68-32.41,119.93-3.95-.69-4.48-19.4-2.43-33.22,7.35-49.54,55.41-87.35,64.82-81.03,12.88,8.65-41.2,103.46-33.22,107.77,7.53,4.07,58.58-78.94,63.2-76.17,3.89,2.33-28.55,63.04-26.74,64.01,1.99,1.07,42.14-71.71,46.19-69.69,3.37,1.69-21.04,53.84-17.02,55.91,4.56,2.35,41.06-61.87,44.57-59.96,2.55,1.39-14.45,36.85-12.96,37.58,1.68.83,20.13-45.93,27.55-44.06,13.75,3.47,8.18,178.64-55.91,197.71-12.84,3.82-31.49,2.41-38.08-8.1-16.2-25.81,46.58-96.48,128.84-173.41"
-        ></path><path
-          class="preloader-stroke b"
-          d="M1.04,82.54C91.82,41.43,144.15,30.7,175.64,29.06c9.73-.51,45.26-1.59,48.62-14.59,1.27-4.93-2.45-10.19-5.67-13.78"
-        ></path></svg
-      >
-    </div>
-  </div> -->
   </div>
 
   <script>

@@ -54,6 +54,7 @@ function initMilestonesAnimation() {
 	const rows = document.querySelectorAll("#milestones .milestone-row");
 	if (!section || rows.length === 0) return;
 
+	const isMobile = window.innerWidth < 640;
 	const maxGap = window.innerWidth < 1000 ? 15 : 20;
 
 	triggers.push(
@@ -80,35 +81,42 @@ function initMilestonesAnimation() {
 		if (scaleTween.scrollTrigger) triggers.push(scaleTween.scrollTrigger);
 	}
 
+	// Применяем сдвиг ячеек только на планшетах и десктопах (>= 640px)
 	rows.forEach((row) => {
 		const cells = row.querySelectorAll<HTMLElement>(".milestone-cell");
 		const [label, value] = cells;
 		if (!label || !value) return;
 
-		const setOffset = (offsetRem: number) => {
-			label.style.transform = `translateX(-${offsetRem}rem)`;
-			value.style.transform = `translateX(${offsetRem}rem)`;
-		};
+		if (isMobile) {
+			// На мобильных сбрасываем возможные стили трансформации
+			label.style.transform = "";
+			value.style.transform = "";
+		} else {
+			const setOffset = (offsetRem: number) => {
+				label.style.transform = `translateX(-${offsetRem}rem)`;
+				value.style.transform = `translateX(${offsetRem}rem)`;
+			};
 
-		triggers.push(
-			ScrollTrigger.create({
-				trigger: row,
-				start: "40% center+=100",
-				end: "80% center",
-				scrub: true,
-				onUpdate: (self) => setOffset((maxGap / 2) * self.progress),
-			}),
-		);
+			triggers.push(
+				ScrollTrigger.create({
+					trigger: row,
+					start: "40% center+=100",
+					end: "80% center",
+					scrub: true,
+					onUpdate: (self) => setOffset((maxGap / 2) * self.progress),
+				}),
+			);
 
-		triggers.push(
-			ScrollTrigger.create({
-				trigger: row,
-				start: "center center-=50",
-				end: "center center-=150",
-				scrub: true,
-				onUpdate: (self) => setOffset((maxGap / 2) * (1 - self.progress)),
-			}),
-		);
+			triggers.push(
+				ScrollTrigger.create({
+					trigger: row,
+					start: "center center-=50",
+					end: "center center-=150",
+					scrub: true,
+					onUpdate: (self) => setOffset((maxGap / 2) * (1 - self.progress)),
+				}),
+			);
+		}
 	});
 
 	initNameRollHover();

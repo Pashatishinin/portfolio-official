@@ -1,0 +1,169 @@
+---
+import { PageTransition, PreLoader } from "../components";
+import SmoothScroll from "../components/animation/SmoothScroll.astro";
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+    title?: string;
+    description?: string;
+}
+
+const {
+    title = "Pavlo Tishynin",
+    description = "Portfolio of Pavlo Tishynin, a UI/UX Designer and Frontend Developer specializing in high-end digital experiences. Bridging the gap between aesthetic design and functional, creative code.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <meta name="description" content={description} />
+        <title>{title}</title>
+        <slot name="head" />
+        <ClientRouter />
+    </head>
+    <body>
+        <PreLoader />
+        <!-- <PageTransition /> -->
+        <div id="page-overlay" transition:persist></div>
+        <SmoothScroll />
+        <slot />
+    </body>
+</html>
+
+<style is:global>
+    html,
+    body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-main);
+    }
+
+    body {
+        scroll-behavior: smooth;
+        overflow-x: clip;
+        margin: 0 auto;
+    }
+
+    body {
+        background:
+            radial-gradient(
+                48% 30% at 14% 4%,
+                #f6f1e4 0%,
+                rgba(246, 241, 228, 0) 60%
+            ),
+            radial-gradient(
+                52% 34% at 86% 10%,
+                #e9e1cd 0%,
+                rgba(233, 225, 205, 0) 62%
+            ),
+            radial-gradient(
+                60% 26% at 30% 52%,
+                #c6ccd6 0%,
+                rgba(198, 204, 214, 0) 62%
+            ),
+            radial-gradient(
+                54% 24% at 78% 74%,
+                #efe7d4 0%,
+                rgba(239, 231, 212, 0) 62%
+            ),
+            linear-gradient(
+                172deg,
+                #ede6d4 0%,
+                #d8d9da 22%,
+                #efe8d8 44%,
+                #cbd1da 66%,
+                #ede7d8 84%,
+                #c9cfd9 100%
+            );
+        background-attachment: fixed;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.85;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .preloader-visited .preloader {
+        display: none !important;
+    }
+
+    ::view-transition-old(root) {
+        animation: none;
+        z-index: 1;
+    }
+
+    #page-overlay {
+        position: fixed;
+        inset: 0;
+        background: #faf6f0;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+    }
+
+    ::view-transition-new(root) {
+        animation-name: var(--vt-anim, none);
+        animation-duration: 0.5s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        animation-fill-mode: both;
+        transform-origin: center center;
+        z-index: 2;
+    }
+
+    @keyframes slide-up {
+        0% {
+            transform: rotate(-10deg) scale(1.4);
+        }
+        10% {
+            transform: rotate(-10deg) scale(1.4);
+        }
+        100% {
+            transform: rotate(0deg) scale(1);
+        }
+    }
+</style>
+
+<script is:inline>
+    function updateHeroDelay() {
+        const navEntries = performance.getEntriesByType("navigation");
+        const isReload =
+            navEntries.length > 0 && navEntries[0].type === "reload";
+        const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
+        window.HERO_DELAY = isFirstLoad || isReload ? 3.6 : 0.2;
+    }
+
+    updateHeroDelay();
+
+    document.addEventListener("astro:before-preparation", (ev) => {
+        const overlay = document.getElementById("page-overlay");
+        if (overlay) overlay.style.opacity = "1";
+
+        if (ev.to.pathname === "/") {
+            document.documentElement.style.setProperty("--vt-anim", "slide-up");
+        }
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+        window.HERO_DELAY = 0.2;
+        document.body.classList.add("preloader-visited");
+    });
+
+    document.addEventListener("astro:page-load", () => {
+        document.documentElement.style.removeProperty("--vt-anim");
+        const overlay = document.getElementById("page-overlay");
+        if (overlay) overlay.style.opacity = "0";
+    });
+</script>

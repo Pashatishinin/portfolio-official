@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* Project page section styles (frontend/src/views/project/**),
+   one folder per component under shared/styles/project/. */
+@import "../shared/styles/project/c-hero/index.css";
+@import "../shared/styles/project/c-short-preview/index.css";
+@import "../shared/styles/project/c-preview-list/index.css";
+@import "../shared/styles/project/c-about-project/index.css";
+@import "../shared/styles/project/c-next/index.css";
+
+/* Home page section styles (frontend/src/views/home/**),
+   one folder per component under shared/styles/home/. */
+@import "../shared/styles/home/c-hero/index.css";
+@import "../shared/styles/home/c-achievement/index.css";
+@import "../shared/styles/home/c-achievement-hover-image/index.css";
+@import "../shared/styles/home/c-my-works/index.css";
+@import "../shared/styles/home/c-work-preview-item/index.css";
+
 @font-face {
   font-family: "Unytour";
   src: url("/fonts/Unytour-Semi-Bold.woff2") format("woff2");

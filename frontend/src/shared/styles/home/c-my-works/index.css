@@ -1,0 +1,18 @@
+/* Styles for views/home/selected-works/MyWorks.astro */
+
+.spotlight {
+  isolation: isolate;
+}
+
+/* Scoped to .spotlight (this section's own wrapper) — a bare h1
+   selector would otherwise override every h1 on the site once this
+   becomes a real global rule. */
+.spotlight h1 {
+  color: #242424 !important;
+}
+
+.project-index h1,
+.project-name,
+.project-images {
+  will-change: transform;
+}

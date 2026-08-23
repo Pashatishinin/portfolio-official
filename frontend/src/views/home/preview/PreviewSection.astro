@@ -7,11 +7,12 @@ const { previewTextLeft, previewTextRight } = await getHeroContent();
 
 <section
   id="preview"
-  class="relative z-10 flex flex-col w-full px-4 sm:px-16 pb-32 pt-64 lg:py-34 gap-16 lg:gap-32 max-w-[1920px] mx-auto overflow-hidden"
+  class="relative z-10 flex flex-col w-full px-4 sm:px-16 pt-24 pb-16 sm:pt-64 sm:pb-32 lg:py-34 gap-8 sm:gap-16 lg:gap-32 max-w-[1920px] mx-auto overflow-hidden"
 >
   <div class="self-start w-full max-w-[800px]">
     <h2
       class="text-left font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%] text-main"
+      aria-label={previewTextLeft}
     >
       <TextEffectLine align="left" blockColor="#141314">
         {previewTextLeft}
@@ -22,6 +23,7 @@ const { previewTextLeft, previewTextRight } = await getHeroContent();
   <div class="self-end w-full max-w-[700px]">
     <h2
       class="text-right font-black -tracking-wide text-[clamp(20px,4vw+10px,42px)] leading-[110%] sm:leading-[90%] text-main"
+      aria-label={previewTextRight}
     >
       <TextEffectLine align="right" blockColor="#141314">
         {previewTextRight}
@@ -65,18 +67,19 @@ const { previewTextLeft, previewTextRight } = await getHeroContent();
     // Tweening a plain state object and applying it manually via
     // setProperty(..., "important") keeps priority on our side.
     const state = { size: restingSize };
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: "#preview",
-        start: "top center",
-        end: "bottom center",
-        scrub: 1,
-      },
-      onUpdate: () => {
-        el.style.setProperty("width", `${state.size}px`, "important");
-        el.style.setProperty("height", `${state.size}px`, "important");
-      },
-    })
+    gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: "#preview",
+          start: "top center",
+          end: "bottom center",
+          scrub: 1,
+        },
+        onUpdate: () => {
+          el.style.setProperty("width", `${state.size}px`, "important");
+          el.style.setProperty("height", `${state.size}px`, "important");
+        },
+      })
       .to(state, { size: previewSize, ease: "none" })
       .to(state, { size: restingSize, ease: "none" });
   };

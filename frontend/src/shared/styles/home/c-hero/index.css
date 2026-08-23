@@ -1,0 +1,15 @@
+/* Styles for views/home/hero/HeroSection.astro */
+
+/* Object3D/three-crystal is a shared component (also used, separately,
+   inside PreLoader.astro) — canvas stretch only, scoped to the direct
+   body child instance from Layout.astro, so it can't affect the
+   preloader's own nested one. The box's own width/height/position are
+   set from HeroSection.astro's own script instead of here:
+   Object3D.astro's own scoped `!important` rule is compiled with an
+   attribute selector (Astro's data-astro-cid scoping), which outranks
+   a plain selector here by specificity even with !important — only an
+   inline style set with the "important" priority can reliably beat it. */
+body > three-crystal .three-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

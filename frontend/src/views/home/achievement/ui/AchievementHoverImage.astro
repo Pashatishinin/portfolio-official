@@ -8,9 +8,21 @@
 
 <script>
   import * as THREE from "three";
-  import { vertexShader, fragmentShader } from "../../shader";
+  import { vertexShader, fragmentShader } from "../shader";
+
+  /**
+   * Превью-картинка ездит за курсором — на тач-устройстве появиться
+   * не может в принципе. Список достижений при этом остаётся полным:
+   * это текст, картинка была только дополнением, так что ничего
+   * не теряется. Экономим WebGL-контекст и импорт three на мобильных.
+   */
+  const CAN_HOVER_FX =
+    window.matchMedia("(min-width: 1024px) and (hover: hover)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function init() {
+    if (!CAN_HOVER_FX) return;
+
     const wrap = document.getElementById(
       "achievement-hover-wrap",
     ) as HTMLDivElement;
@@ -151,16 +163,23 @@
 
     setup();
 
-    const achCanvas = document.getElementById("achievement-hover-canvas") as HTMLCanvasElement;
-    if (achCanvas) (achCanvas as any).__dispose = () => {
-      renderer.dispose();
-      delete (achCanvas as any).__dispose;
-    };
+    const achCanvas = document.getElementById(
+      "achievement-hover-canvas",
+    ) as HTMLCanvasElement;
+    if (achCanvas)
+      (achCanvas as any).__dispose = () => {
+        renderer.dispose();
+        delete (achCanvas as any).__dispose;
+      };
 
-    document.addEventListener("astro:before-swap", () => {
-      renderer.dispose();
-      if (achCanvas) delete (achCanvas as any).__dispose;
-    }, { once: true });
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        renderer.dispose();
+        if (achCanvas) delete (achCanvas as any).__dispose;
+      },
+      { once: true },
+    );
   }
 
   function onReady(fn: () => void) {
@@ -171,23 +190,3 @@
   onReady(init);
   document.addEventListener("astro:after-swap", init);
 </script>
-
-<style>
-  #achievement-hover-wrap {
-    position: fixed;
-    pointer-events: none;
-    z-index: 999;
-    width: 360px;
-    height: 200px;
-    transform: translate(calc(-75% - 24px), -125%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    overflow: hidden;
-  }
-
-  #achievement-hover-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-</style>

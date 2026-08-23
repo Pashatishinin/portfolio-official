@@ -1,0 +1,17 @@
+/* Styles for views/home/achievement/AchievementSection.astro */
+
+#achievement .lg\:sticky {
+  mix-blend-mode: difference;
+}
+
+#achievement h1 {
+  color: white !important;
+}
+
+/* .achievement-row is rendered by the child AchievementItem.astro —
+   needs to be a real global rule (no Astro :global() wrapper here,
+   this is plain CSS) to reach across that component boundary. */
+#achievement .achievement-row {
+  mix-blend-mode: difference;
+  color: white;
+}

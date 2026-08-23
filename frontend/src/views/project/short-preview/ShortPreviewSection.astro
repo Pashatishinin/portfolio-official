@@ -3,7 +3,7 @@ import { TextEffectLine } from "../../../components";
 import PreviewList from "./ui/PreviewList.astro";
 
 interface VideoItem {
-  src: string;
+  src: string | null;
   poster: string;
 }
 
@@ -22,7 +22,7 @@ const { listVideo = [], info } = Astro.props;
       class="relative w-full px-4 sm:px-16 pt-8 bg-[#faf6f0]"
     >
       {info && (
-        <div class="px-4 sm:px-16 py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-16">
+        <div class=" py-8 max-w-480 mx-auto flex flex-col items-center w-full gap-8 sm:gap-16">
           <div class="max-w-200 about-info-text">
             <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl">
               <TextEffectLine mixBlend align="center" blockColor="#141314">
@@ -33,44 +33,36 @@ const { listVideo = [], info } = Astro.props;
         </div>
       )}
       <div class="relative max-w-480 mx-auto">
-        <div class="absolute inset-0 pointer-events-none z-0">
-          <div class="sticky top-0 h-screen flex flex-col justify-center p-16">
-            <h1 class="font-accent italic text-[90px] sm:text-[160px] md:text-[220px] lg:text-[64px] leading-[65%] -tracking-widest">
-              <TextEffectLine blockColor="var(--color-main)">Short</TextEffectLine>
+        {/* Below lg (<1024px): normal, non-sticky block in-flow above
+            the videos, centered — the absolute/sticky overlay used to
+            overlap the video grid at those widths. lg+ (≥1024px):
+            flips back to the original absolute background overlay,
+            pinned behind the videos while scrolling. DOM position
+            (before the video list) already puts it above once it's no
+            longer taken out of flow by position:absolute. */}
+        <div class="lg:absolute lg:inset-0 lg:pointer-events-none lg:z-0">
+          <div class="flex flex-col items-center text-center p-4 sm:p-8 lg:p-16 lg:sticky lg:top-0 lg:h-svh lg:justify-center lg:items-start lg:text-left">
+            <h1 class="font-accent italic text-[clamp(40px,8vw,220px)] leading-[65%] -tracking-widest">
+              <TextEffectLine blockColor="var(--color-main)">
+                Short
+              </TextEffectLine>
             </h1>
-            <h1 class="text-[90px] sm:text-[160px] md:text-[220px] lg:text-[100px] leading-[65%] -tracking-widest">
-              <TextEffectLine blockColor="var(--color-main)">Preview</TextEffectLine>
+            <h1 class="text-[clamp(48px,10vw,220px)] leading-[65%] -tracking-widest -mt-[0.15em] lg:mt-0">
+              <TextEffectLine blockColor="var(--color-main)">
+                Preview
+              </TextEffectLine>
             </h1>
           </div>
         </div>
 
         {/* Videos on top, provide scroll height */}
-        <div class="relative z-10 py-24">
+        <div class="relative z-10 pb-24 lg:py-24">
           <PreviewList listVideo={listVideo} />
         </div>
       </div>
     </section>
   )
 }
-
-<style>
-  img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-  }
-
-  p {
-    font-size: 18px;
-    line-height: 95%;
-  }
-
-  .video-blur {
-    filter: blur(1px) grayscale(1) brightness(0.5);
-    transition: filter 0.3s ease-out;
-    will-change: filter;
-  }
-</style>
 
 <script>
   import gsap from "gsap";

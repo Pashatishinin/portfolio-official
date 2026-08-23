@@ -1,0 +1,13 @@
+/* Styles for views/home/selected-works/ui/WorkPreviewItem.astro */
+
+/*
+  Условие совпадает с CAN_HOVER_FX в FluidOverlay.astro.
+  Вместе с обратным условием на .fluid-overlay-canvas это даёт
+  строгое «или-или»: одновременно видима всегда ровно одна картинка.
+*/
+@media (min-width: 1024px) and (hover: hover) and
+  (prefers-reduced-motion: no-preference) {
+  .work-preview__poster {
+    display: none;
+  }
+}

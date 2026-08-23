@@ -12,19 +12,21 @@ const {
 
 <section
   id="hero"
-  class="relative z-10 h-full max-h-250 min-h-[100vh] w-full max-w-[1920px] mx-auto"
+  class="relative z-10 h-full max-h-250 min-h-svh w-full max-w-[1920px] mx-auto"
 >
   <div
-    class="px-4 sm:px-16 py-16 sm:py-32 2xl:py-54 flex flex-col justify-between min-h-screen h-full text-background"
+    class="px-8 sm:px-16 py-16 gap-12 justify-center sm:py-32 sm:gap-0 sm:justify-between 2xl:py-54 flex flex-col min-h-svh h-full text-background"
   >
     <div>
       <h1
         class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
+        aria-label={taglineLine1}
       >
         <TextEffect delay={0.2} wait>{taglineLine1} </TextEffect>
       </h1>
       <h1
         class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
+        aria-label={taglineLine2}
       >
         <TextEffect delay={0.2} wait>{taglineLine2}</TextEffect>
       </h1>
@@ -33,33 +35,19 @@ const {
     <div>
       <h1
         class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
+        aria-label={nameLine1}
       >
         <TextEffect delay={0.2} wait>{nameLine1}</TextEffect>
       </h1>
       <h1
         class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
+        aria-label={nameLine2}
       >
         <TextEffect delay={0.2} wait>{nameLine2}</TextEffect>
       </h1>
     </div>
   </div>
 </section>
-
-<style is:global>
-  /* Object3D/three-crystal is a shared component (also used, separately,
-     inside PreLoader.astro) — canvas stretch only, scoped to the direct
-     body child instance from Layout.astro, so it can't affect the
-     preloader's own nested one. The box's own width/height/position are
-     set from the script below instead of here: Object3D.astro's own
-     scoped `!important` rule is compiled with an attribute selector
-     (Astro's data-astro-cid scoping), which outranks a plain selector
-     here by specificity even with !important — only an inline style set
-     with the "important" priority can reliably beat it. */
-  body > three-crystal .three-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-</style>
 
 <script>
   import gsap from "gsap";

@@ -98,7 +98,20 @@ interface Props {
     }
   `;
 
+  /**
+   * Эффект живёт только под курсором: на тач-устройстве он физически
+   * не может сработать, а стоит дорого — отдельный WebGLRenderer и два
+   * WebGLRenderTarget 512×512 на КАЖДЫЙ проект в списке.
+   * Обложка при этом никуда не девается: она лежит в разметке
+   * отдельным <img>, канвас просто накрывает её сверху.
+   */
+  const CAN_HOVER_FX =
+    window.matchMedia("(min-width: 1024px) and (hover: hover)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   function initFluidOverlays() {
+    if (!CAN_HOVER_FX) return;
+
     document
       .querySelectorAll<HTMLCanvasElement>(
         ".fluid-overlay-canvas:not([data-fluid-init])",
@@ -273,5 +286,17 @@ interface Props {
     pointer-events: none;
     z-index: 2;
     animation: fluid-in 1s ease-out forwards;
+  }
+
+  /*
+    Условие ровно обратное тому, при котором инициализируется шейдер
+    (см. CAN_HOVER_FX выше). Там, где скрипт не запускается, канвас
+    убирается из потока, и остаётся статичная обложка из разметки —
+    так две картинки никогда не накладываются друг на друга.
+  */
+  @media (max-width: 1023px), (hover: none), (prefers-reduced-motion: reduce) {
+    .fluid-overlay-canvas {
+      display: none;
+    }
   }
 </style>

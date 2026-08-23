@@ -20,7 +20,8 @@ if (projectIndex === -1) {
 
 const project = projects[projectIndex];
 const nextProject = projects[(projectIndex + 1) % projects.length];
-const nextProjectLink = project.nextProjectLink ?? `/project/${nextProject.slug}`;
+const nextProjectLink =
+  project.nextProjectLink ?? `/project/${nextProject.slug}`;
 ---
 
 <Layout>

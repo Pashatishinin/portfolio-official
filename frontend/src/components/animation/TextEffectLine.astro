@@ -94,6 +94,12 @@ const paddingValue = title ? "0.15em" : "0.5em";
   .split-line {
     position: relative;
     opacity: 0;
+    /* SplitText already grouped this text into one deliberate line — a
+       sub-pixel/rounding mismatch between its measurement and the
+       browser's own layout could otherwise re-wrap it inside its own
+       (fit-content) .block-line-wrapper, showing up as one random line
+       rendering twice as tall with blank space around the text. */
+    white-space: nowrap;
   }
 
   .text-reveal-container[data-align="left"] .block-line-wrapper {

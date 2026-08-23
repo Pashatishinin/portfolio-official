@@ -5,7 +5,7 @@ import MyWorks from "./MyWorks.astro";
 
 <section id="works" class="relative z-100000 flex flex-col w-full">
   <div class="works-reveal-container relative z-0 w-full h-svh">
-    <div class="absolute inset-0 z-0 overflow-hidden min-h-screen">
+    <div class="absolute inset-0 z-0 overflow-hidden min-h-svh">
       <PreviewSection />
     </div>
 
@@ -19,11 +19,13 @@ import MyWorks from "./MyWorks.astro";
           <div class="flex flex-col items-center gap-2">
             <h2
               class="selected-works-title font-accent text-center font-black -tracking-widest text-[#1d1d1d] text-[clamp(60px,25vw,300px)] leading-[70%]"
+              aria-label="Selected"
             >
               Selected
             </h2>
             <h2
               class="selected-works-title text-center font-black -tracking-widest text-[#1d1d1d] text-[clamp(60px,25vw,300px)] leading-[70%]"
+              aria-label="Works"
             >
               Works
             </h2>

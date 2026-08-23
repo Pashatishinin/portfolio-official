@@ -14,19 +14,19 @@ const { award, result, year, img } = Astro.props;
   data-achievement-img={img}
 >
   <p
-    class="col-span-2 sm:col-span-1 text-left sm:text-right font-mono text-sm opacity-50 sm:opacity-100 order-1 sm:order-3"
+    class="col-span-2 sm:col-span-1 text-left sm:text-right font-mono text-xs sm:text-sm opacity-50 sm:opacity-100 order-1 sm:order-3"
   >
     {year}
   </p>
 
   <p
-    class="font-bold font-accent -tracking-widest text-[48px] order-2 sm:order-1"
+    class="font-bold font-accent -tracking-widest text-2xl sm:text-3xl md:text-4xl lg:text-[48px] leading-tight order-2 sm:order-1"
   >
     {award}
   </p>
 
   <p
-    class="text-right sm:text-center text-lg opacity-70 group-hover:opacity-100 transition-opacity order-3 sm:order-2"
+    class="text-right sm:text-center text-sm sm:text-base md:text-lg opacity-70 group-hover:opacity-100 transition-opacity order-3 sm:order-2"
   >
     {result}
   </p>

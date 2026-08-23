@@ -11,10 +11,11 @@ const { name, role, description, link } = Astro.props;
 
 <a
   href={link}
-  class="name-roll-trigger milestone-row flex justify-center items-center gap-4"
+  class="name-roll-trigger milestone-row flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-center sm:text-left"
+  aria-label={`View ${name} project`}
 >
   <p
-    class="milestone-cell flex-1 text-right text-xl sm:text-3xl leading-[0.95] -tracking-[0.025rem] text-black will-change-transform"
+    class="milestone-cell flex-1 text-center sm:text-right text-2xl sm:text-3xl leading-[0.95] -tracking-[0.025rem] text-black will-change-transform"
   >
     <span
       class="name-roll-container relative inline-block overflow-hidden align-bottom h-[1.25em]"
@@ -32,13 +33,13 @@ const { name, role, description, link } = Astro.props;
       role && (
         <>
           <br />
-          <span class="text-[0.6em]">{role}</span>
+          <span class="text-[0.6em] opacity-70">{role}</span>
         </>
       )
     }
   </p>
   <p
-    class="milestone-cell font-accent flex-1 text-lg sm:text-2xl leading-[0.95] -tracking-[0.025rem] text-[#4f4f4f] will-change-transform"
+    class="milestone-cell font-accent flex-1 text-center sm:text-left text-lg sm:text-2xl leading-[0.95] -tracking-[0.025rem] text-[#4f4f4f] will-change-transform"
   >
     <span class="inline-block max-w-100">{description}</span>
   </p>

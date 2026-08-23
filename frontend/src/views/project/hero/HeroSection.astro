@@ -8,14 +8,7 @@ const { text, img } = Astro.props;
 ---
 
 <section class="relative">
-  <!-- <div class="back z-10 fixed top-0 left-0 bg-main h-screen w-screen"></div> -->
-  <div class="flex flex-col text-main h-screen">
-    <!-- <div class="p-4 sm:p-16 pt-32 text-center">
-      <h1 class="text-[clamp(48px,11vw,180px)] -tracking-widest leading-[80%]">
-        <TextEffect delay={0.4} wait>{text}</TextEffect>
-      </h1>
-    </div> -->
-
+  <div class="flex flex-col text-main h-svh">
     <div class="h-full image">
       {
         img && (
@@ -31,28 +24,6 @@ const { text, img } = Astro.props;
     </div>
   </div>
 </section>
-
-<style>
-  .image {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .image img {
-    position: relative;
-    top: -15%;
-    height: 130%;
-    width: 100%;
-    object-fit: cover;
-    display: block;
-    will-change: transform;
-  }
-
-  p {
-    font-size: 18px;
-    line-height: 95%;
-  }
-</style>
 
 <script>
   import gsap from "gsap";
@@ -79,7 +50,9 @@ const { text, img } = Astro.props;
   };
 
   const initParallax = () => {
-    const section = document.querySelector<HTMLElement>(".image")?.closest("section");
+    const section = document
+      .querySelector<HTMLElement>(".image")
+      ?.closest("section");
     const img = document.querySelector<HTMLElement>(".image img");
     if (!section || !img) return;
 

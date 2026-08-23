@@ -134,6 +134,8 @@
     }
   `;
   async function initFluid() {
+    const isDesktop = window.matchMedia("(min-width: 640px)").matches;
+    if (!isDesktop) return;
     const container = document.getElementById("fluid-container");
     if (!container) {
       return;
@@ -145,175 +147,190 @@
 
     try {
       class FluidScene {
-      container: HTMLElement;
-      width: number;
-      height: number;
-      scene: THREE.Scene;
-      camera: THREE.OrthographicCamera;
-      renderer: THREE.WebGLRenderer;
-      mouse: THREE.Vector4;
-      frame: number;
-      fluidMaterial!: THREE.ShaderMaterial;
-      displayMaterial!: THREE.ShaderMaterial;
-      bufferA!: THREE.WebGLRenderTarget;
-      bufferB!: THREE.WebGLRenderTarget;
-      quad!: THREE.Mesh;
+        container: HTMLElement;
+        width: number;
+        height: number;
+        scene: THREE.Scene;
+        camera: THREE.OrthographicCamera;
+        renderer: THREE.WebGLRenderer;
+        mouse: THREE.Vector4;
+        frame: number;
+        fluidMaterial!: THREE.ShaderMaterial;
+        displayMaterial!: THREE.ShaderMaterial;
+        bufferA!: THREE.WebGLRenderTarget;
+        bufferB!: THREE.WebGLRenderTarget;
+        quad!: THREE.Mesh;
 
-      constructor(container: HTMLElement) {
-        this.container = container;
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        this.renderer = new THREE.WebGLRenderer();
+        constructor(container: HTMLElement) {
+          this.container = container;
+          this.width = window.innerWidth;
+          this.height = window.innerHeight;
+          this.scene = new THREE.Scene();
+          this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+          this.renderer = new THREE.WebGLRenderer();
 
-        this.renderer.setSize(this.width, this.height);
-        this.container.appendChild(this.renderer.domElement);
+          this.renderer.setSize(this.width, this.height);
+          this.container.appendChild(this.renderer.domElement);
 
-        this.mouse = new THREE.Vector4(0, 0, 0, 0);
-        this.frame = 0;
+          this.mouse = new THREE.Vector4(0, 0, 0, 0);
+          this.frame = 0;
 
-        this.initBuffers();
-        this.initMeshes();
-        this.setupEvents();
-        this.animate();
+          this.initBuffers();
+          this.initMeshes();
+          this.setupEvents();
+          this.animate();
+        }
+
+        initBuffers() {
+          const params = {
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            type: THREE.FloatType,
+          };
+          this.bufferA = new THREE.WebGLRenderTarget(
+            this.width,
+            this.height,
+            params,
+          );
+          this.bufferB = new THREE.WebGLRenderTarget(
+            this.width,
+            this.height,
+            params,
+          );
+        }
+
+        onResize() {
+          this.width = window.innerWidth;
+          this.height = window.innerHeight;
+
+          // Обновляем размер холста
+          this.renderer.setSize(this.width, this.height);
+
+          // Обновляем разрешение в шейдерах
+          this.fluidMaterial.uniforms.iResolution.value.set(
+            this.width,
+            this.height,
+          );
+          this.displayMaterial.uniforms.iResolution.value.set(
+            this.width,
+            this.height,
+          );
+
+          // Обновляем размер буферов, чтобы картинка не растягивалась
+          this.bufferA.setSize(this.width, this.height);
+          this.bufferB.setSize(this.width, this.height);
+        }
+
+        initMeshes() {
+          this.fluidMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              iTime: { value: 0 },
+              iResolution: {
+                value: new THREE.Vector2(this.width, this.height),
+              },
+              iMouse: { value: this.mouse },
+              iFrame: { value: 0 },
+              iPreviousFrame: { value: null },
+              uBrushSize: { value: 0.5 },
+              uBrushStrength: { value: 1.0 },
+              uFluidDecay: { value: 0.98 },
+              uTrailLength: { value: 0.95 },
+              uStopDecay: { value: 0.9 },
+            },
+            vertexShader,
+            fragmentShader: fluidShader,
+          });
+
+          this.displayMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              iTime: { value: 0 },
+              iResolution: {
+                value: new THREE.Vector2(this.width, this.height),
+              },
+              iFluid: { value: null },
+              uDistortionAmount: { value: 1.0 },
+
+              uColor1: { value: new THREE.Color(0xffffff) },
+              uColor2: { value: new THREE.Color(0xf5f5f7) },
+              uColor3: { value: new THREE.Color(0xfffaf0) },
+              uColor4: { value: new THREE.Color(0xf0f4f8) },
+
+              // uColor1: { value: new THREE.Color(0xfbf3e6) }, // Ультра-светлый абрикосовый крем
+              // uColor2: { value: new THREE.Color(0xffffff) }, // Идеально белый (для ярких чистых бликов)
+              // uColor3: { value: new THREE.Color(0xfff0f0) }, // Едва заметный коралловый туман
+              // uColor4: { value: new THREE.Color(0xffe6cf) }, // Нежнейший золотистый персик
+              uColorIntensity: { value: 1.0 },
+              uSoftness: { value: 0.5 },
+            },
+            vertexShader,
+            fragmentShader: displayShader,
+          });
+
+          this.quad = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2),
+            this.fluidMaterial,
+          );
+          this.scene.add(this.quad);
+        }
+
+        setupEvents() {
+          window.addEventListener("pointermove", (e) => {
+            this.mouse.z = this.mouse.x;
+            this.mouse.w = this.mouse.y;
+            this.mouse.x = e.clientX;
+            this.mouse.y = this.height - e.clientY;
+          });
+
+          window.addEventListener("pointerdown", () => (this.mouse.z = 1.0));
+          window.addEventListener("pointerup", () => (this.mouse.z = 0.0));
+
+          // 2. И ВОТ ЭТУ СТРОКУ ДОБАВЛЯЕМ В КОНЕЦ setupEvents
+          window.addEventListener("resize", () => this.onResize());
+        }
+        animate() {
+          requestAnimationFrame(() => this.animate());
+          const t = performance.now() * 0.001;
+
+          this.quad.material = this.fluidMaterial;
+          this.fluidMaterial.uniforms.iPreviousFrame.value =
+            this.bufferB.texture;
+          this.fluidMaterial.uniforms.iFrame.value = this.frame;
+          this.fluidMaterial.uniforms.iTime.value = t;
+
+          this.renderer.setRenderTarget(this.bufferA);
+          this.renderer.render(this.scene, this.camera);
+
+          this.quad.material = this.displayMaterial;
+          this.displayMaterial.uniforms.iFluid.value = this.bufferA.texture;
+          this.displayMaterial.uniforms.iTime.value = t;
+
+          this.renderer.setRenderTarget(null);
+          this.renderer.render(this.scene, this.camera);
+
+          let temp = this.bufferA;
+          this.bufferA = this.bufferB;
+          this.bufferB = temp;
+          this.frame++;
+        }
       }
-
-      initBuffers() {
-        const params = {
-          minFilter: THREE.NearestFilter,
-          magFilter: THREE.NearestFilter,
-          type: THREE.FloatType,
-        };
-        this.bufferA = new THREE.WebGLRenderTarget(
-          this.width,
-          this.height,
-          params,
-        );
-        this.bufferB = new THREE.WebGLRenderTarget(
-          this.width,
-          this.height,
-          params,
-        );
-      }
-
-      onResize() {
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-
-        // Обновляем размер холста
-        this.renderer.setSize(this.width, this.height);
-
-        // Обновляем разрешение в шейдерах
-        this.fluidMaterial.uniforms.iResolution.value.set(
-          this.width,
-          this.height,
-        );
-        this.displayMaterial.uniforms.iResolution.value.set(
-          this.width,
-          this.height,
-        );
-
-        // Обновляем размер буферов, чтобы картинка не растягивалась
-        this.bufferA.setSize(this.width, this.height);
-        this.bufferB.setSize(this.width, this.height);
-      }
-
-      initMeshes() {
-        this.fluidMaterial = new THREE.ShaderMaterial({
-          uniforms: {
-            iTime: { value: 0 },
-            iResolution: { value: new THREE.Vector2(this.width, this.height) },
-            iMouse: { value: this.mouse },
-            iFrame: { value: 0 },
-            iPreviousFrame: { value: null },
-            uBrushSize: { value: 0.5 },
-            uBrushStrength: { value: 1.0 },
-            uFluidDecay: { value: 0.98 },
-            uTrailLength: { value: 0.95 },
-            uStopDecay: { value: 0.9 },
-          },
-          vertexShader,
-          fragmentShader: fluidShader,
-        });
-
-        this.displayMaterial = new THREE.ShaderMaterial({
-          uniforms: {
-            iTime: { value: 0 },
-            iResolution: { value: new THREE.Vector2(this.width, this.height) },
-            iFluid: { value: null },
-            uDistortionAmount: { value: 1.0 },
-
-            uColor1: { value: new THREE.Color(0xffffff) },
-            uColor2: { value: new THREE.Color(0xf5f5f7) },
-            uColor3: { value: new THREE.Color(0xfffaf0) },
-            uColor4: { value: new THREE.Color(0xf0f4f8) },
-
-            // uColor1: { value: new THREE.Color(0xfbf3e6) }, // Ультра-светлый абрикосовый крем
-            // uColor2: { value: new THREE.Color(0xffffff) }, // Идеально белый (для ярких чистых бликов)
-            // uColor3: { value: new THREE.Color(0xfff0f0) }, // Едва заметный коралловый туман
-            // uColor4: { value: new THREE.Color(0xffe6cf) }, // Нежнейший золотистый персик
-            uColorIntensity: { value: 1.0 },
-            uSoftness: { value: 0.5 },
-          },
-          vertexShader,
-          fragmentShader: displayShader,
-        });
-
-        this.quad = new THREE.Mesh(
-          new THREE.PlaneGeometry(2, 2),
-          this.fluidMaterial,
-        );
-        this.scene.add(this.quad);
-      }
-
-      setupEvents() {
-        window.addEventListener("pointermove", (e) => {
-          this.mouse.z = this.mouse.x;
-          this.mouse.w = this.mouse.y;
-          this.mouse.x = e.clientX;
-          this.mouse.y = this.height - e.clientY;
-        });
-
-        window.addEventListener("pointerdown", () => (this.mouse.z = 1.0));
-        window.addEventListener("pointerup", () => (this.mouse.z = 0.0));
-
-        // 2. И ВОТ ЭТУ СТРОКУ ДОБАВЛЯЕМ В КОНЕЦ setupEvents
-        window.addEventListener("resize", () => this.onResize());
-      }
-      animate() {
-        requestAnimationFrame(() => this.animate());
-        const t = performance.now() * 0.001;
-
-        this.quad.material = this.fluidMaterial;
-        this.fluidMaterial.uniforms.iPreviousFrame.value = this.bufferB.texture;
-        this.fluidMaterial.uniforms.iFrame.value = this.frame;
-        this.fluidMaterial.uniforms.iTime.value = t;
-
-        this.renderer.setRenderTarget(this.bufferA);
-        this.renderer.render(this.scene, this.camera);
-
-        this.quad.material = this.displayMaterial;
-        this.displayMaterial.uniforms.iFluid.value = this.bufferA.texture;
-        this.displayMaterial.uniforms.iTime.value = t;
-
-        this.renderer.setRenderTarget(null);
-        this.renderer.render(this.scene, this.camera);
-
-        let temp = this.bufferA;
-        this.bufferA = this.bufferB;
-        this.bufferB = temp;
-        this.frame++;
-      }
-    }
 
       if (container) {
         (window as any).fluidBackground = new FluidScene(container);
       }
     } catch (err) {
-      console.error("FluidScene init failed, falling back to static background:", err);
+      console.error(
+        "FluidScene init failed, falling back to static background:",
+        err,
+      );
     }
   }
+
+  window.addEventListener("resize", () => {
+    if (window.matchMedia("(min-width: 640px)").matches) {
+      initFluid();
+    }
+  });
+
   if (document.readyState === "complete") {
     initFluid();
   } else {
@@ -328,6 +345,6 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: #f5f5f7;
+    /* background: #f5f5f7; */
   }
 </style>

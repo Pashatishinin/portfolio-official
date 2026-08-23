@@ -1,0 +1,28 @@
+/* Styles for views/project/hero/HeroSection.astro */
+
+.image {
+  position: relative;
+  overflow: hidden;
+}
+
+.image img {
+  position: relative;
+  top: -15%;
+  height: 130%;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  will-change: transform;
+}
+
+/* Cover-fit on a much shorter, narrower mobile viewport was zooming
+   the (landscape) hero image into an unrecognizable vertical sliver.
+   A shorter section (see .image height above) already reduces the
+   aspect mismatch; trimming the parallax buffer here keeps the scrub
+   from cropping in even further on top of that. */
+@media (max-width: 640px) {
+  .image img {
+    top: -7.5%;
+    height: 115%;
+  }
+}
