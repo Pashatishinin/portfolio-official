@@ -7,19 +7,22 @@ const { bioText, extraText1, extraText2, extraText3, imageUrl } =
   await getAboutContent();
 ---
 
-<section id="about" class="relative h-[250vh] w-full max-w-[1920px] mx-auto">
+<section
+  id="about"
+  class="relative h-[250vh] w-full max-w-[1920px] mx-auto z-10 isolate"
+>
   <div
     class="sticky top-0 h-svh w-full overflow-hidden flex items-center justify-center p-4 sm:p-8 lg:p-16"
   >
-    <!-- Слой с картинкой на заднем плане -->
+    <!-- 1. Слой Canvas (картинка) -->
     <div
       class="absolute inset-0 z-0 pointer-events-none flex items-center justify-center"
     >
       <AboutWaveImage imageUrl={imageUrl} />
     </div>
 
-    <!-- Текст поверх -->
-    <div class="relative z-10 w-full">
+    <!-- 2. Слой текста -->
+    <div class="relative z-10 w-full mix-blend-difference pointer-events-none">
       <AboutText
         bioText={bioText}
         extraText1={extraText1}

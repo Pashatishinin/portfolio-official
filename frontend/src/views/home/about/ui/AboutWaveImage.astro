@@ -9,7 +9,7 @@ const { imageUrl } = Astro.props;
 <div class="flex justify-center items-center w-full h-full">
   <div
     id="about-img-wrap"
-    class="w-56 sm:w-64 md:w-72 lg:w-80 opacity-50 pointer-events-auto"
+    class="w-56 sm:w-64 md:w-72 lg:w-80 opacity-50 pointer-events-auto relative z-10 isolate"
     style="overflow:visible"
     data-image-url={imageUrl}
   >
