@@ -156,7 +156,9 @@ const {
       scale: 1,
       duration: hasPreloader ? 1.8 : 0.9,
       ease: "power3.out",
-      delay: hasPreloader ? 4 : 0.3,
+      // 4 было привязано к старому minPacing 3.2 (+0.8 с).
+      // Прелоадер теперь уезжает с 1.7 — сохраняем тот же зазор.
+      delay: hasPreloader ? 2.5 : 0.3,
     });
 
     gsap.to("body > three-crystal", {

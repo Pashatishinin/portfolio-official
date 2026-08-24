@@ -28,6 +28,7 @@ const ogImageUrl = new URL(ogImage, SITE).href;
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="generator" content={Astro.generator} />
+        <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
         <link rel="canonical" href={canonical} />
         <meta name="description" content={description} />
         <title>{title}</title>
@@ -172,7 +173,10 @@ const ogImageUrl = new URL(ogImage, SITE).href;
         const isReload =
             navEntries.length > 0 && navEntries[0].type === "reload";
         const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
-        window.HERO_DELAY = isFirstLoad || isReload ? 3.6 : 0.2;
+        // 3.6 держало LCP: текст Hero невидим, пока не пройдёт задержка.
+    // Значение связано с minPacing прелоадера (PreLoader.astro):
+    // текст должен доигрывать, пока прелоадер уезжает, а не после.
+    window.HERO_DELAY = isFirstLoad || isReload ? 2.0 : 0.2;
     }
 
     updateHeroDelay();

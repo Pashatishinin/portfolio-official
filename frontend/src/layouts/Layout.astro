@@ -34,6 +34,10 @@ const isDefaultOg = ogImage === "/og.jpg";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    {/* Декодер draco приходит с gstatic и стоит на критическом пути
+        (6 185 мс в PageSpeed). Заранее открытое соединение убирает
+        из этого DNS и TLS. */}
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="canonical" href={canonical} />
     <meta name="description" content={description} />
     <title>{title}</title>
@@ -212,7 +216,10 @@ const isDefaultOg = ogImage === "/og.jpg";
     const navEntries = performance.getEntriesByType("navigation");
     const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
     const isFirstLoad = !sessionStorage.getItem("alreadyVisited");
-    window.HERO_DELAY = isFirstLoad || isReload ? 3.6 : 0.2;
+    // 3.6 держало LCP: текст Hero невидим, пока не пройдёт задержка.
+    // Значение связано с minPacing прелоадера (PreLoader.astro):
+    // текст должен доигрывать, пока прелоадер уезжает, а не после.
+    window.HERO_DELAY = isFirstLoad || isReload ? 2.0 : 0.2;
   }
 
   updateHeroDelay();

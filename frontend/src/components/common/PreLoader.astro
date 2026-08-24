@@ -16,12 +16,12 @@ import TextEffect from "../animation/TextEffect.astro";
       <div
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
       >
-        <TextEffect delay={0.6}>Pavlo</TextEffect>
+        <TextEffect delay={0.3}>Pavlo</TextEffect>
       </div>
       <div
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
       >
-        <TextEffect delay={0.7}>Tishynin</TextEffect>
+        <TextEffect delay={0.35}>Tishynin</TextEffect>
       </div>
     </div>
 
@@ -29,12 +29,12 @@ import TextEffect from "../animation/TextEffect.astro";
       <div
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
       >
-        <TextEffect delay={0.6}>Creative</TextEffect>
+        <TextEffect delay={0.3}>Creative</TextEffect>
       </div>
       <div
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
       >
-        <TextEffect delay={0.7}>Technologist</TextEffect>
+        <TextEffect delay={0.35}>Technologist</TextEffect>
       </div>
     </div>
   </div>
@@ -113,8 +113,8 @@ import TextEffect from "../animation/TextEffect.astro";
             {
               scale: 1,
               opacity: 0.5,
-              delay: 0.8,
-              duration: 0.8,
+              delay: 0.4,
+              duration: 0.5,
               ease: "back.out(1.7)",
               onStart: () => {
                 crystal.classList.remove("opacity-0");
@@ -140,8 +140,8 @@ import TextEffect from "../animation/TextEffect.astro";
 
       const initGapAnimation = () => {
         const isMobile = window.innerWidth < 1024;
-        const gapDelay = 1.2;
-        const gapDuration = 1.5;
+        const gapDelay = 0.6;
+        const gapDuration = 0.9;
 
         const timeline = gsap.timeline({ delay: gapDelay });
 
@@ -165,16 +165,16 @@ import TextEffect from "../animation/TextEffect.astro";
         gsap.to(svg, {
           autoAlpha: 1,
           duration: 0.2,
-          delay: 1,
+          delay: 0.5,
           ease: "power2.out",
         });
 
         gsap.to(strokes, {
           drawSVG: "100%",
           autoAlpha: 1,
-          duration: 2,
-          delay: 1,
-          stagger: 0.15,
+          duration: 1.1,
+          delay: 0.5,
+          stagger: 0.08,
           ease: "power2.inOut",
         });
       };
@@ -186,17 +186,27 @@ import TextEffect from "../animation/TextEffect.astro";
       // чем текст/фон/анимации успевали отрисоваться.
       const fontsReady =
         (document.fonts && document.fonts.ready) || Promise.resolve();
-      const windowReady =
-        document.readyState === "complete"
+      // Раньше здесь ждали window.load. Проблема в том, что load
+      // наступает только после ВСЕХ ресурсов, включая медузу на 7,8 МБ:
+      // в PageSpeed она едет 5,4 с, и прелоадер висел до страховочных
+      // 6 с вместо своих 3,2. Модели не обязательно быть готовой к
+      // моменту показа сайта — она догрузится и появится сама.
+      // Ждём разметку и шрифты: этого достаточно, чтобы текст не прыгнул.
+      const domReady =
+        document.readyState !== "loading"
           ? Promise.resolve()
           : new Promise<void>((resolve) =>
-              window.addEventListener("load", () => resolve(), { once: true }),
+              document.addEventListener("DOMContentLoaded", () => resolve(), {
+                once: true,
+              }),
             );
 
-      // Сохраняем исходный тайминг (svg/текст успевают доиграть к ~3.2с),
-      // но не уезжаем раньше, чем контент реально готов.
+      // Было 3200 — под финиш обводки SVG, которая рисовалась с 1-й по
+      // 3-ю секунду. Вся хореография ниже сжата вдвое, поэтому обводка
+      // теперь заканчивается к ~1.6с, и порог сдвинут следом.
+      // Этот таймер держал LCP: текст Hero невидим, пока идёт прелоадер.
       const minPacing = new Promise<void>((resolve) =>
-        setTimeout(resolve, 3200),
+        setTimeout(resolve, 1700),
       );
       // Страховка: не блокируем показ сайта дольше 6с, даже если что-то
       // (например, шрифт) так и не подтвердит готовность.
@@ -205,7 +215,7 @@ import TextEffect from "../animation/TextEffect.astro";
       );
 
       const contentReady = Promise.race([
-        Promise.all([fontsReady, windowReady]),
+        Promise.all([fontsReady, domReady]),
         safetyTimeout,
       ]);
       const readyToExit = Promise.all([contentReady, minPacing]);
@@ -234,7 +244,7 @@ import TextEffect from "../animation/TextEffect.astro";
         gsap.set(wrappers, { height: "0%", yPercent: 0, scale: 1, skewY: 20 });
 
         const tl = gsap.timeline({
-          delay: 2.0,
+          delay: 1.0,
         });
 
         wrappers.forEach((wrapper, index) => {
