@@ -21,6 +21,8 @@ const { listVideo = [] } = Astro.props;
                             muted
                             loop
                             playsinline
+                            aria-hidden="true"
+                            tabindex="-1"
                             poster={video.poster}
                             class="video-blur w-full h-full object-cover"
                         >

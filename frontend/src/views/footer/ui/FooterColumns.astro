@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
   }
   <div class="cols grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10">
     <div class="col">
-      <h4 class="mono">Contact</h4>
+      <h3 class="mono">Contact</h3>
       <ul>
         <li>
           <LinkButton
@@ -30,7 +30,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="col">
-      <h4 class="mono">Elsewhere</h4>
+      <h3 class="mono">Elsewhere</h3>
       <ul>
         {
           socialLinks.map((link) => (
@@ -49,7 +49,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="col hidden sm:block">
-      <h4 class="mono">Colophon</h4>
+      <h3 class="mono">Colophon</h3>
       <p>Astro, GSAP, Sanity. Built and coded by me.</p>
       <p>Typography — Unytour and Didonique.</p>
     </div>
@@ -117,14 +117,16 @@ const year = new Date().getFullYear();
     font-size: 0.69rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(250, 246, 240, 0.45);
+    /* 0.45 давало 4.29:1 при кегле 0.69rem — на волос ниже 4.5.
+       0.52 → 5.35:1, на глаз разница почти незаметна. */
+    color: rgba(250, 246, 240, 0.52);
   }
 
   .col {
     min-width: 0;
   }
 
-  .col h4 {
+  .col h3 {
     margin: 0 0 0.7rem;
     font-weight: 400;
   }

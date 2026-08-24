@@ -17,34 +17,42 @@ const {
   <div
     class="px-8 sm:px-16 py-16 gap-12 justify-center sm:py-32 sm:gap-0 sm:justify-between 2xl:py-54 flex flex-col min-h-svh h-full text-background"
   >
-    <div>
-      <h1
+    {/* Единственный h1 страницы. Раньше каждая из четырёх строк была
+        отдельным h1 — скринридер объявлял четыре заголовка первого
+        уровня и не понимал, где начинается документ. Теперь заголовок
+        один и текстовый, а крупные строки — обычные div: TextEffect
+        рвёт их на символы, и в доступном дереве им делать нечего
+        (aria-label на div без роли всё равно игнорируется). */}
+    <h1 class="sr-only">
+      {nameLine1}
+      {nameLine2} — {taglineLine1}
+      {taglineLine2}
+    </h1>
+
+    <div aria-hidden="true">
+      <div
         class="font-accent text-right font-black -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
-        aria-label={taglineLine1}
       >
         <TextEffect delay={0.2} wait>{taglineLine1} </TextEffect>
-      </h1>
-      <h1
+      </div>
+      <div
         class="text-right font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
-        aria-label={taglineLine2}
       >
         <TextEffect delay={0.2} wait>{taglineLine2}</TextEffect>
-      </h1>
+      </div>
     </div>
 
-    <div>
-      <h1
+    <div aria-hidden="true">
+      <div
         class="font-accent text-left font-bold -tracking-widest text-[clamp(48px,10vw,210px)] leading-[75%]"
-        aria-label={nameLine1}
       >
         <TextEffect delay={0.2} wait>{nameLine1}</TextEffect>
-      </h1>
-      <h1
+      </div>
+      <div
         class="text-left font-black -tracking-[0.06em] text-[clamp(48px,10vw,192px)] leading-[75%]"
-        aria-label={nameLine2}
       >
         <TextEffect delay={0.2} wait>{nameLine2}</TextEffect>
-      </h1>
+      </div>
     </div>
     <div class="hint">scroll down ↓</div>
   </div>
@@ -183,7 +191,9 @@ const {
     font-size: 0.68rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #8b8880;
+    /* было #8b8880 — 2.4:1 на градиенте, при кегле 11px это провал
+       1.4.3. #66635c даёт 4.87:1 на самом светлом участке фона. */
+    color: #66635c;
     animation: bob 2.4s ease-in-out infinite;
   }
 

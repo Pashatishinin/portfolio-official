@@ -24,20 +24,29 @@ const nextProjectLink =
   project.nextProjectLink ?? `/project/${nextProject.slug}`;
 ---
 
-<Layout>
+<Layout
+  title={`${project.headerTitle} — Pavlo Tishynin`}
+  description={project.info ?? project.heroText ?? undefined}
+  ogImage={project.coverImageUrl ?? "/og.jpg"}
+>
   <HeaderSectionProject title={project.headerTitle} />
-  <HeroSection text={project.heroText} img={project.mainImg} />
+  <main id="main">
+    {/* Единственный h1 страницы проекта: визуально его роль играет
+        обложка, поэтому заголовок отдан скринридеру. */}
+    <h1 class="sr-only">{project.headerTitle}</h1>
+    <HeroSection text={project.heroText} img={project.mainImg} />
 
-  <ShortPreviewSection listVideo={project.videos} info={project.info} />
-  <AboutProjectSection
-    role={project.role}
-    tools={project.tools}
-    year={project.year}
-    index={projectIndex + 1}
-    total={projects.length}
-    liveLink={project.liveLink}
-    githubLink={project.githubLink}
-  />
-  <NextProjectSection link={nextProjectLink} />
+    <ShortPreviewSection listVideo={project.videos} info={project.info} />
+    <AboutProjectSection
+      role={project.role}
+      tools={project.tools}
+      year={project.year}
+      index={projectIndex + 1}
+      total={projects.length}
+      liveLink={project.liveLink}
+      githubLink={project.githubLink}
+    />
+    <NextProjectSection link={nextProjectLink} />
+  </main>
   <FooterSection />
 </Layout>

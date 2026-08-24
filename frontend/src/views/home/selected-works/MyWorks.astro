@@ -12,13 +12,17 @@ const projects = await getProjects();
     <div
       class="project-index absolute top-20 left-4 sm:relative z-20 mix-blend-difference"
     >
-      <h1
-        class="uppercase text-[clamp(1.5rem,5vw,7rem)] leading-[100%] font-medium"
+      {/* Счётчик работ, а не заголовок: тег изменён на div, чтобы
+          на главной остался единственный h1. Текстовая версия для
+          скринридера обновляется вместе с .current-index. */}
+      <div
+        class="index-counter uppercase text-[clamp(1.5rem,5vw,7rem)] leading-[100%] font-medium"
+        aria-hidden="true"
       >
         <span class="text-[0.6em]">[ </span>
         <span class="current-index">01</span>
         <span class="text-[0.6em]">/0{projects.length} ]</span>
-      </h1>
+      </div>
     </div>
 
     <div

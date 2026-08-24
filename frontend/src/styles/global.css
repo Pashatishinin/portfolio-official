@@ -59,3 +59,79 @@ html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Доступность: фокус, служебные утилиты, уменьшенное движение.
+   Проверяется на Awwwards Developer Award — там семантика и
+   работа с клавиатуры весят больше всего.
+   ───────────────────────────────────────────────────────────── */
+
+/* Только для мыши фокус не рисуем, для клавиатуры — обязательно.
+   Рамка без скруглений: на сайте нет ни одного радиуса. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid #1d1d1d;
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+/* Тёмные зоны: футер и всё, что лежит под mix-blend-mode: difference,
+   где чёрная рамка растворилась бы. */
+footer :focus-visible,
+.header :focus-visible,
+.preloader :focus-visible,
+body.footer-active :focus-visible {
+  outline-color: #faf6f0;
+}
+
+/* Ссылка «перейти к содержимому»: не видна, пока не получила фокус.
+   Первое, что нажимают при проверке с клавиатуры. */
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: -80px;
+  z-index: 300000;
+  background: #131313;
+  color: #faf6f0;
+  padding: 12px 18px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
+/* Текст только для скринридеров. Не display:none — иначе он
+   выпадает и из доступного дерева тоже. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Системная настройка «уменьшить движение». Важно: контент обязан
+   остаться видимым — анимации, стартующие с opacity: 0, доводятся
+   до конечного состояния мгновенно, а не замирают на нуле. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

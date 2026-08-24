@@ -3,23 +3,65 @@ import { FluidScene, PageTransition, PreLoader } from "../components";
 import SmoothScroll from "../components/animation/SmoothScroll.astro";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const SITE = "https://www.pavlotishynin.com";
+
+const {
+  title = "Pavlo Tishynin — Creative Technologist",
+  description = "Portfolio of Pavlo Tishynin, a UI/UX Designer and Frontend Developer specializing in high-end digital experiences. Bridging the gap between aesthetic design and functional, creative code.",
+  ogImage = "/og.jpg",
+} = Astro.props;
+
+// Абсолютные URL: соцсети и мессенджеры не резолвят относительные пути.
+const canonical = new URL(Astro.url.pathname, SITE).href;
+const ogImageUrl = new URL(ogImage, SITE).href;
+// Размеры объявляем только для собственной карточки 1200×630. Для обложки
+// проекта они неизвестны, а неверные — хуже отсутствующих: часть клиентов
+// резервирует место по ним и рисует пустые поля.
+const isDefaultOg = ogImage === "/og.jpg";
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta
-      name="description"
-      content="Portfolio of Pavlo Tishynin, a UI/UX Designer and Frontend Developer specializing in high-end digital experiences. Bridging the gap between aesthetic design and functional, creative code."
-    />
-    <title>Pavlo Tishynin</title>
+    <link rel="canonical" href={canonical} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    {/* Open Graph — превью при репосте в X, LinkedIn, Slack, Telegram.
+        Профессиональные голоса на Awwwards приходят из этих лент,
+        и карточка со ссылкой — первое, что там видят. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pavlo Tishynin" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    {isDefaultOg && <meta property="og:image:width" content="1200" />}
+    {isDefaultOg && <meta property="og:image:height" content="630" />}
+    <meta property="og:image:alt" content={title} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="theme-color" content="#faf6f0" />
     <ClientRouter />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <PreLoader />
     <!-- <PageTransition /> -->
     <div id="page-overlay" transition:persist></div>

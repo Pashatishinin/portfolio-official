@@ -42,16 +42,23 @@ const { listVideo = [], info } = Astro.props;
             longer taken out of flow by position:absolute. */}
         <div class="lg:absolute lg:inset-0 lg:pointer-events-none lg:z-0">
           <div class="flex flex-col items-center text-center p-4 sm:p-8 lg:p-16 lg:sticky lg:top-0 lg:h-svh lg:justify-center lg:items-start lg:text-left">
-            <h1 class="font-accent italic text-[clamp(40px,8vw,220px)] leading-[65%] -tracking-widest">
+            <h2 class="sr-only">Short preview</h2>
+            <div
+              class="font-accent italic text-[clamp(27px,5.3vw,147px)] leading-[65%] -tracking-widest"
+              aria-hidden="true"
+            >
               <TextEffectLine blockColor="var(--color-main)">
                 Short
               </TextEffectLine>
-            </h1>
-            <h1 class="text-[clamp(48px,10vw,220px)] leading-[65%] -tracking-widest -mt-[0.15em] lg:mt-0">
+            </div>
+            <div
+              class="text-[clamp(32px,6.7vw,147px)] leading-[65%] -tracking-widest -mt-[0.15em] lg:mt-0"
+              aria-hidden="true"
+            >
               <TextEffectLine blockColor="var(--color-main)">
                 Preview
               </TextEffectLine>
-            </h1>
+            </div>
           </div>
         </div>
 

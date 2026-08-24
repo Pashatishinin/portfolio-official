@@ -188,8 +188,9 @@ const displayUrl = (url: string) =>
 
     ScrollTrigger.create({
       trigger: section,
-      start: "top 80%",
+      start: "top 70%",
       once: true,
+      // markers: true,
       onEnter: () => {
         gsap.to(rows, {
           opacity: 1,
@@ -204,8 +205,9 @@ const displayUrl = (url: string) =>
     lines.forEach((line) => {
       ScrollTrigger.create({
         trigger: line,
-        start: "top 90%",
+        start: "top 70%",
         once: true,
+        // markers: true,
         onEnter: () => {
           gsap.to(line, {
             width: "100%",

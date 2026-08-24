@@ -9,20 +9,25 @@ const { link } = Astro.props;
   class="h-svh w-full max-h-200 flex flex-col justify-center items-center relative gap-10 sm:gap-20"
 >
   <div class="flex flex-col justify-center items-center">
-    <h1
+    {/* Один заголовок вместо двух h1: строки разнесены визуально,
+        но для AT это одна фраза. */}
+    <h2 class="sr-only">Next project</h2>
+    <div
       class="font-accent text-center font-black -tracking-widest text-main text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
+      aria-hidden="true"
     >
       <TextEffectLine mixBlend align="left" blockColor="#242424"
         >Next</TextEffectLine
       >
-    </h1>
-    <h1
+    </div>
+    <div
       class="text-center font-black -tracking-widest text-main text-[clamp(42px,6vw+1rem,100px)] leading-[75%]"
+      aria-hidden="true"
     >
       <TextEffectLine mixBlend align="left" blockColor="#242424"
         >Project</TextEffectLine
       >
-    </h1>
+    </div>
   </div>
 
   <LinkButton text="View Project" href={link} class="next-project-link">

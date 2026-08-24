@@ -9,14 +9,14 @@ const { bioText, extraText1, extraText2, extraText3, imageUrl } =
 
 <section
   id="about"
-  class="relative h-[250vh] w-full max-w-[1920px] mx-auto z-10 isolate"
+  class="relative h-100vh sm:h-[250vh] w-full max-w-[1920px] mx-auto z-10 isolate"
 >
   <div
-    class="sticky top-0 h-svh w-full overflow-hidden flex items-center justify-center p-4 sm:p-8 lg:p-16"
+    class="sm:sticky top-0 h-svh w-full overflow-hidden flex items-center justify-center p-4 sm:p-8 lg:p-16"
   >
     <!-- 1. Слой Canvas (картинка) -->
     <div
-      class="absolute inset-0 z-0 pointer-events-none flex items-center justify-center"
+      class="hidden absolute inset-0 z-0 pointer-events-none sm:flex items-center justify-center"
     >
       <AboutWaveImage imageUrl={imageUrl} />
     </div>

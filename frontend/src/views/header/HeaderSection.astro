@@ -2,13 +2,13 @@
 import Logo from "../../components/ui/buttons/Logo.astro";
 ---
 
-<section
+<header
   class="header fixed inset-x-0 z-150000 flex justify-between px-4 sm:px-16 py-8 max-w-480 mx-auto"
 >
   <div>
     <Logo />
   </div>
-</section>
+</header>
 
 <style>
   .header {
@@ -30,10 +30,17 @@ import Logo from "../../components/ui/buttons/Logo.astro";
 <script>
   import gsap from "gsap";
   const headerMove = () => {
+    // HERO_DELAY (Layout.astro): 3.6 на первой загрузке/reload, пока
+    // играет прелоадер, иначе 0.2 — обычный переход между страницами
+    // без прелоадера. Раньше здесь была фиксированная задержка 3.5s,
+    // рассчитанная только на сценарий с прелоадером — без него шапка
+    // так же ждала 3.5s, хотя появляться должна была почти сразу.
+    const hasPreloader = ((window as any).HERO_DELAY ?? 0.2) > 1;
+
     gsap.from(".header", {
       y: "-150",
-      delay: 3.5,
-      duration: 2,
+      delay: hasPreloader ? 3.5 : 0.2,
+      duration: hasPreloader ? 2 : 1,
       ease: "expo.inOut",
     });
   };

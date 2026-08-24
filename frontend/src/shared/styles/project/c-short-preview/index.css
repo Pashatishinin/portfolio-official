@@ -3,8 +3,8 @@
 /* Targets .video-blur elements rendered by the child PreviewList
    component — this must be global (not Astro scoped-style) to reach
    across component files at all. */
-.video-blur {
+/* .video-blur {
   filter: blur(1px) grayscale(1) brightness(0.5);
   transition: filter 0.3s ease-out;
   will-change: filter;
-}
+} */

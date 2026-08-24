@@ -5,6 +5,7 @@ import TextEffect from "../animation/TextEffect.astro";
 
 <section
   class="fixed inset-0 preloader z-200000 bg-[#131313] flex flex-col justify-center items-center"
+  aria-hidden="true"
 >
   <Object3D />
 
@@ -12,33 +13,29 @@ import TextEffect from "../animation/TextEffect.astro";
     class="grid-container relative grid grid-cols-1 lg:grid-cols-2 gap-[100px] sm:gap-[400px] px-6"
   >
     <div class="block text-center lg:text-right">
-      <h1
+      <div
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
-        aria-label="Pavlo"
       >
         <TextEffect delay={0.6}>Pavlo</TextEffect>
-      </h1>
-      <h1
+      </div>
+      <div
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
-        aria-label="Tishynin"
       >
         <TextEffect delay={0.7}>Tishynin</TextEffect>
-      </h1>
+      </div>
     </div>
 
     <div class="block text-center lg:text-left">
-      <h1
+      <div
         class="font-accent font-bold -tracking-widest text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
-        aria-label="Creative"
       >
         <TextEffect delay={0.6}>Creative</TextEffect>
-      </h1>
-      <h1
+      </div>
+      <div
         class="font-black -tracking-[0.06em] text-secondary text-[clamp(36px,8vw,64px)] leading-[75%]"
-        aria-label="Technologist"
       >
         <TextEffect delay={0.7}>Technologist</TextEffect>
-      </h1>
+      </div>
     </div>
   </div>
 

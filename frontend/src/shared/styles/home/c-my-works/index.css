@@ -4,14 +4,14 @@
   isolation: isolate;
 }
 
-/* Scoped to .spotlight (this section's own wrapper) — a bare h1
-   selector would otherwise override every h1 on the site once this
-   becomes a real global rule. */
-.spotlight h1 {
+/* Scoped to .spotlight (this section's own wrapper). Раньше селектор
+   был .spotlight h1 — счётчик работ был заголовком; теперь это div
+   .index-counter, чтобы на странице остался один h1. */
+.spotlight .index-counter {
   color: #242424 !important;
 }
 
-.project-index h1,
+.project-index .index-counter,
 .project-name,
 .project-images {
   will-change: transform;

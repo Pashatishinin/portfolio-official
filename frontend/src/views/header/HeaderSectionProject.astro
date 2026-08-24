@@ -8,12 +8,12 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<section
+<header
   class="header fixed inset-x-0 z-999 flex justify-between px-4 sm:px-16 py-8 max-w-480 mx-auto"
 >
   <Logo />
   {title && <span class="project-title uppercase font-medium">{title}</span>}
-</section>
+</header>
 
 <style>
   .header {

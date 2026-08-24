@@ -9,12 +9,12 @@ const { text, img } = Astro.props;
 
 <section class="relative">
   <div class="flex flex-col text-main h-svh">
-    <div class="h-full image">
+    <div class="h-full image z-10">
       {
         img && (
           <img
             src={img}
-            alt={text}
+            alt={text ?? ""}
             width="2400"
             loading="eager"
             fetchpriority="high"

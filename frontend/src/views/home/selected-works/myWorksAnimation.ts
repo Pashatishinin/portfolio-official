@@ -12,7 +12,13 @@ export function initMyWorks() {
 	spotlightTrigger = null;
 
 	const section = document.querySelector<HTMLElement>(".spotlight");
-	const projectIndex = document.querySelector<HTMLElement>(".project-index h1");
+	// Счётчик работ перестал быть заголовком (на странице должен остаться
+	// один h1), поэтому ищем его по классу. Фолбэк на h1 оставлен на
+	// случай отката разметки — без него весь блок молча падал бы на
+	// раннем return ниже.
+	const projectIndex = document.querySelector<HTMLElement>(
+		".project-index .index-counter, .project-index h1",
+	);
 	const projectNames = document.querySelectorAll<HTMLElement>(".project-name");
 	const projectImgs = document.querySelectorAll<HTMLElement>(
 		".project-images > div",
