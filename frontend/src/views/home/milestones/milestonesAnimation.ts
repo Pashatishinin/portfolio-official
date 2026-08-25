@@ -5,6 +5,7 @@ import { SplitText } from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 function initNameRollHover() {
+	if (window.innerWidth < 640) return;
 	const triggersEls = document.querySelectorAll(
 		"#milestones .name-roll-trigger",
 	);
