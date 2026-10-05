@@ -72,31 +72,36 @@ Edit `src/db/schema.ts` → `pnpm db:generate` → commit the new file in `drizz
 
 ## Deploy (Cloudflare Workers + Neon)
 
-The same app runs on Cloudflare Workers: `src/index.ts` is the Worker entry, settings live in
-`wrangler.jsonc`. `nodejs_compat` fills `process.env` from Worker vars and secrets, so `src/env.ts`
-is shared by Node (local `pnpm dev`) and Cloudflare.
+The API runs as the Worker `aquarium-api` on `https://aquarium-api.tishyninpavlo.workers.dev`, but the
+browser never talks to that address. The site proxies `https://www.pavlotishynin.com/api/*` to the
+Worker (`frontend/src/pages/api/[...path].ts`), so for the browser everything is one site and the
+session cookies are ordinary first-party cookies of `www.pavlotishynin.com`. (Calling `workers.dev`
+directly can't work: browsers won't let it set cookies for `pavlotishynin.com`.)
+
+`src/index.ts` is the Worker entry; settings live in `wrangler.jsonc`. `nodejs_compat` fills
+`process.env` from Worker vars and secrets, so `src/env.ts` is shared by Node (local `pnpm dev`)
+and Cloudflare.
 
 1. **Log in**: `npx wrangler login`.
-2. **Domain**: the API must live on a subdomain of the site (`api.pavlotishynin.com`), otherwise
-   the session cookies are third-party for `www.pavlotishynin.com` and browsers drop them.
-   The `routes` entry in `wrangler.jsonc` creates that custom domain on deploy — the
-   `pavlotishynin.com` zone has to be in your Cloudflare account (the site's own DNS records can
-   keep pointing at Vercel).
-3. **Public settings**: check `vars` in `wrangler.jsonc` (`API_URL`, `FRONTEND_URL`,
-   `OWNER_EMAILS`, `GOOGLE_CLIENT_ID`, `COOKIE_DOMAIN`). `FRONTEND_URL` must be the exact origin the
-   site is served from (`https://www.pavlotishynin.com`) — CORS allows only that origin.
-4. **Secrets** (once, and whenever they change):
+2. **Public settings** live in `vars` in `wrangler.jsonc` — change them there, not in the dashboard
+   (`wrangler deploy` overwrites dashboard edits). `API_URL` and `FRONTEND_URL` are both
+   `https://www.pavlotishynin.com`; `COOKIE_DOMAIN` stays empty.
+3. **Secrets** (once, and whenever they change). Values in `.env` may be quoted, so strip quotes:
    ```bash
-   npx wrangler secret put JWT_SECRET            # a NEW random value, not the local one
-   npx wrangler secret put GOOGLE_CLIENT_SECRET
-   npx wrangler secret put DATABASE_URL          # Neon production branch, pooled string
+   node -e "process.stdout.write(require('crypto').randomBytes(48).toString('base64url'))" | npx wrangler secret put JWT_SECRET
+   grep '^GOOGLE_CLIENT_SECRET=' .env | cut -d= -f2- | tr -d '"' | npx wrangler secret put GOOGLE_CLIENT_SECRET
+   grep '^DATABASE_URL=' .env | cut -d= -f2- | tr -d '"' | npx wrangler secret put DATABASE_URL
    ```
-5. **Database**: apply migrations to the production branch before deploying a schema change:
-   `pnpm db:migrate` with the production `DATABASE_URL(_UNPOOLED)` in `.env`.
-6. **Google**: add `https://api.pavlotishynin.com/api/auth/google/callback` as an authorized
-   redirect URI of the OAuth client.
-7. **Deploy**: `pnpm run deploy`. Check `https://api.pavlotishynin.com/api/health`.
-8. **Frontend** (Vercel): set `PUBLIC_API_URL=https://api.pavlotishynin.com` and redeploy.
+4. **Database**: apply migrations to the production branch before deploying a schema change
+   (`pnpm db:migrate` with the production connection string in `.env`).
+5. **Google** (OAuth client): authorized redirect URI
+   `https://www.pavlotishynin.com/api/auth/google/callback`, JavaScript origin
+   `https://www.pavlotishynin.com`.
+6. **Deploy**: `pnpm run deploy`, then check
+   `https://aquarium-api.tishyninpavlo.workers.dev/api/health`.
+7. **Frontend** (Vercel → Settings → Environment Variables), then redeploy:
+   - `PUBLIC_API_URL=https://www.pavlotishynin.com`
+   - `AQUARIUM_API_ORIGIN=https://aquarium-api.tishyninpavlo.workers.dev`
 
 Logs: `npx wrangler tail`, or Workers → aquarium-api → Logs in the dashboard.
 

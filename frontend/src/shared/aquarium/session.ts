@@ -2,7 +2,20 @@
 // visitor's behalf by forwarding their cookies.
 import type { AquariumUser } from "./types";
 
-export const API_URL = (import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787").replace(/\/+$/, "");
+const trim = (url: string) => url.replace(/\/+$/, "");
+
+/**
+ * Where the BROWSER sends API calls. In production this is the site itself
+ * (https://www.pavlotishynin.com): /api/* is proxied to the Worker by
+ * src/pages/api/[...path].ts, so cookies stay first-party.
+ */
+export const API_URL = trim(import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787");
+
+/**
+ * Where the Astro SERVER sends API calls — straight to the Worker, skipping the
+ * proxy hop. Falls back to API_URL (local dev talks to the backend directly).
+ */
+export const INTERNAL_API_URL = trim(import.meta.env.AQUARIUM_API_ORIGIN || API_URL);
 
 const ACCESS_COOKIE = "auth_access_token";
 const REFRESH_COOKIE = "auth_refresh_token";
@@ -39,7 +52,7 @@ function mergeCookies(header: string, setCookies: string[]): string {
 }
 
 async function fetchMe(cookie: string): Promise<Response> {
-	return fetch(`${API_URL}/api/me`, { headers: { cookie }, cache: "no-store" });
+	return fetch(`${INTERNAL_API_URL}/api/me`, { headers: { cookie }, cache: "no-store" });
 }
 
 /**
@@ -59,7 +72,7 @@ export async function resolveSession(request: Request, origin: string): Promise<
 		let res = await fetchMe(cookie);
 
 		if (res.status === 401 && hasCookie(cookie, REFRESH_COOKIE)) {
-			const refresh = await fetch(`${API_URL}/api/auth/refresh`, {
+			const refresh = await fetch(`${INTERNAL_API_URL}/api/auth/refresh`, {
 				method: "POST",
 				headers: { cookie, origin },
 				cache: "no-store",
@@ -82,7 +95,7 @@ export async function resolveSession(request: Request, origin: string): Promise<
 
 /** GET a JSON endpoint of the backend with the visitor's cookies. */
 export async function apiGet<T>(path: string, cookie: string): Promise<T> {
-	const res = await fetch(`${API_URL}${path}`, { headers: { cookie }, cache: "no-store" });
+	const res = await fetch(`${INTERNAL_API_URL}${path}`, { headers: { cookie }, cache: "no-store" });
 	if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
 	return (await res.json()) as T;
 }

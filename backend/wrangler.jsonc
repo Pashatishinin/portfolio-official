@@ -16,17 +16,18 @@
 
 	// Public, non-secret settings. Secrets (JWT_SECRET, GOOGLE_CLIENT_SECRET,
 	// DATABASE_URL) are set with `wrangler secret put …`, never here.
+	// Edit these here, not in the dashboard: `wrangler deploy` overwrites
+	// dashboard changes with this file.
 	"vars": {
-		"API_URL": "https://api.pavlotishynin.com",
+		// The API is reached THROUGH the site: www.pavlotishynin.com/api/* is
+		// proxied to this Worker by frontend/src/pages/api/[...path].ts. So the
+		// public API address (and Google's redirect URI) is the site itself, and
+		// the session cookies are host-only cookies of www.pavlotishynin.com.
+		"API_URL": "https://aquarium-api.tishyninpavlo.workers.dev",
 		"FRONTEND_URL": "https://www.pavlotishynin.com",
 		"OWNER_EMAILS": "tishyninpavlo@gmail.com",
 		"GOOGLE_CLIENT_ID": "29350352029-qdvv3la4ulb9pn2hmkap70ni8h117peg.apps.googleusercontent.com",
-		"COOKIE_DOMAIN": ".pavlotishynin.com",
+		"COOKIE_DOMAIN": "",
 		"COOKIE_SECURE": "true"
-	},
-
-	// Serve the API on a subdomain of the site, so the session cookies are
-	// first-party for www.pavlotishynin.com. Requires the pavlotishynin.com
-	// zone to be on Cloudflare (DNS can stay pointed at Vercel for the site).
-	"routes": [{ "pattern": "api.pavlotishynin.com", "custom_domain": true }]
+	}
 }
