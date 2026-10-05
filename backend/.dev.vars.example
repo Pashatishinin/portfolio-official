@@ -1,0 +1,11 @@
+# Used only by `pnpm dev:worker` (wrangler dev). Copy to .dev.vars — never commit it.
+# Same keys as .env; wrangler reads this file instead of .env.
+API_URL=http://localhost:8787
+FRONTEND_URL=http://localhost:4321
+OWNER_EMAILS=you@gmail.com
+JWT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+COOKIE_DOMAIN=
+COOKIE_SECURE=true
+DATABASE_URL=

@@ -1,0 +1,32 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "aquarium-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-01",
+	// nodejs_compat gives the Worker `process.env` (filled from vars + secrets),
+	// so the same src/env.ts works on Node locally and on Cloudflare.
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": { "enabled": true },
+
+	// Keep the *.workers.dev address on as well: handy for health checks and
+	// debugging. (With custom-domain routes set, wrangler turns it off by default.)
+	"workers_dev": true,
+	// No per-version preview URLs: a private API doesn't need extra public addresses.
+	"preview_urls": false,
+
+	// Public, non-secret settings. Secrets (JWT_SECRET, GOOGLE_CLIENT_SECRET,
+	// DATABASE_URL) are set with `wrangler secret put …`, never here.
+	"vars": {
+		"API_URL": "https://api.pavlotishynin.com",
+		"FRONTEND_URL": "https://www.pavlotishynin.com",
+		"OWNER_EMAILS": "tishyninpavlo@gmail.com",
+		"GOOGLE_CLIENT_ID": "29350352029-qdvv3la4ulb9pn2hmkap70ni8h117peg.apps.googleusercontent.com",
+		"COOKIE_DOMAIN": ".pavlotishynin.com",
+		"COOKIE_SECURE": "true"
+	},
+
+	// Serve the API on a subdomain of the site, so the session cookies are
+	// first-party for www.pavlotishynin.com. Requires the pavlotishynin.com
+	// zone to be on Cloudflare (DNS can stay pointed at Vercel for the site).
+	"routes": [{ "pattern": "api.pavlotishynin.com", "custom_domain": true }]
+}

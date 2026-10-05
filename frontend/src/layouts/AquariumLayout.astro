@@ -1,0 +1,44 @@
+---
+// Private area shell: same look as the site (background, grain, fonts),
+// without the preloader, smooth scroll and page transitions.
+import "../styles/global.css";
+import "../shared/styles/aquarium/index.css";
+import Logo from "../components/ui/buttons/Logo.astro";
+
+interface Props {
+	title?: string;
+}
+
+const { title = "Aquarium" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<meta name="theme-color" content="#faf6f0" />
+		<title>{title} — Pavlo Tishynin</title>
+		<link rel="icon" href="/favicon.ico" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+		/>
+		<slot name="head" />
+	</head>
+	<body class="aq-body">
+		<a class="skip-link" href="#main">Skip to content</a>
+		<div class="aq-shell">
+			<header class="aq-bar">
+				<div class="aq-logo"><Logo /></div>
+				<slot name="bar" />
+			</header>
+			<main id="main">
+				<slot />
+			</main>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,66 @@
+---
+import AquariumLayout from "../../layouts/AquariumLayout.astro";
+import { API_URL, apiGet } from "../../shared/aquarium/session";
+import type { Group, Project } from "../../shared/aquarium/types";
+import Dashboard from "../../views/aquarium/Dashboard";
+
+// The middleware has already checked the session; no user means no page.
+const session = Astro.locals.aquarium;
+if (!session?.user) return Astro.redirect("/aquarium/login");
+
+const { user, cookie } = session;
+
+let groups: Group[] = [];
+let projects: Project[] = [];
+let loadError: string | null = null;
+try {
+	const [g, p] = await Promise.all([
+		apiGet<{ items: Group[] }>("/api/groups", cookie),
+		apiGet<{ items: Project[] }>("/api/projects", cookie),
+	]);
+	groups = g.items;
+	projects = p.items;
+} catch (error) {
+	console.error("[aquarium] initial load failed:", error);
+	loadError = "Couldn’t load projects from the backend. Refresh to try again.";
+}
+
+const initial = (user.name ?? user.email).trim().charAt(0).toUpperCase();
+---
+
+<AquariumLayout title="Aquarium">
+	<div slot="bar" class="aq-account aq-mono">
+		<span>Aquarium / Private</span>
+		<span class="aq-account__divider" aria-hidden="true"></span>
+		<span class="aq-account__who">
+			{
+				user.avatarUrl ? (
+					<img class="aq-account__avatar" src={user.avatarUrl} alt="" width="22" height="22" referrerpolicy="no-referrer" />
+				) : (
+					<span class="aq-account__avatar" aria-hidden="true">{initial}</span>
+				)
+			}
+			<span>{user.email}</span>
+		</span>
+		<button type="button" class="aq-link-btn aq-mono" id="aq-signout" data-api={API_URL}>Sign out</button>
+	</div>
+
+	<Dashboard client:load apiUrl={API_URL} initialGroups={groups} initialProjects={projects} loadError={loadError} />
+
+	<footer class="aq-foot aq-mono aq-mono--sm">
+		<span>Aquarium — for my eyes only</span>
+		<span>Noindex · signed in with Google</span>
+	</footer>
+</AquariumLayout>
+
+<script>
+	const button = document.getElementById("aq-signout") as HTMLButtonElement | null;
+	button?.addEventListener("click", async () => {
+		button.disabled = true;
+		try {
+			await fetch(`${button.dataset.api}/api/auth/logout`, { method: "POST", credentials: "include" });
+		} finally {
+			window.location.href = "/aquarium/login";
+		}
+	});
+</script>

@@ -1,0 +1,51 @@
+---
+import AquariumLayout from "../../layouts/AquariumLayout.astro";
+import { API_URL } from "../../shared/aquarium/session";
+
+// Signed-in visitors never get here: the middleware sends them to /aquarium.
+
+const ERRORS: Record<string, string> = {
+	forbidden: "That Google account isn’t allowed in here.",
+	oauth_failed: "Google sign-in didn’t go through. Try again.",
+	unavailable: "The Aquarium backend isn’t answering right now. Try again in a moment.",
+};
+
+const errorKey = Astro.url.searchParams.get("error") ?? "";
+const error = ERRORS[errorKey] ?? (errorKey ? ERRORS.oauth_failed : null);
+const loginHref = `${API_URL}/api/auth/google/login`;
+---
+
+<AquariumLayout title="Sign in">
+	<span slot="bar" class="aq-mono aq-muted">Private area</span>
+
+	<section class="aq-login" aria-labelledby="login-title">
+		<h1 class="aq-login__title" id="login-title">
+			<span class="aq-italic">this is the</span>
+			<span class="aq-display">Aquarium</span>
+		</h1>
+		<p class="aq-login__sub">
+			My private dashboard of projects and every link they live behind. Glass is one‑way.
+		</p>
+
+		{error && <p class="aq-login__alert" role="alert">{error}</p>}
+
+		<a class="aq-btn aq-google" href={loginHref}>
+			<svg width="20" height="20" viewBox="0 0 40 40" aria-hidden="true">
+				<circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+				<text x="20" y="26" text-anchor="middle" font-family="Poppins, sans-serif" font-size="17" font-weight="600" fill="currentColor">G</text>
+			</svg>
+			Continue with Google
+			<span aria-hidden="true">→</span>
+		</a>
+
+		<p class="aq-login__aside">
+			<span class="star" aria-hidden="true">*</span>
+			<span class="aq-italic">only one account gets in, and it isn’t yours</span>
+		</p>
+	</section>
+
+	<footer class="aq-login__foot aq-mono aq-mono--sm">
+		<a href="/">← Back to pavlotishynin.com</a>
+		<span>Noindex</span>
+	</footer>
+</AquariumLayout>
