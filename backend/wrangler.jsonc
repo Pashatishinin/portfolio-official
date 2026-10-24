@@ -23,7 +23,7 @@
 		// proxied to this Worker by frontend/src/pages/api/[...path].ts. So the
 		// public API address (and Google's redirect URI) is the site itself, and
 		// the session cookies are host-only cookies of www.pavlotishynin.com.
-		"API_URL": "https://aquarium-api.tishyninpavlo.workers.dev",
+		"API_URL": "https://www.pavlotishynin.com",
 		"FRONTEND_URL": "https://www.pavlotishynin.com",
 		"OWNER_EMAILS": "tishyninpavlo@gmail.com",
 		"GOOGLE_CLIENT_ID": "29350352029-qdvv3la4ulb9pn2hmkap70ni8h117peg.apps.googleusercontent.com",
