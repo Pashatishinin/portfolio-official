@@ -6,6 +6,7 @@
 
 <script>
   import * as THREE from "three";
+  import { hasHardwareWebGL } from "../../shared/lib/webgl";
 
   const vertexShader = `
     varying vec2 vUv;
@@ -150,6 +151,9 @@
   async function initFluid() {
     const isDesktop = window.matchMedia("(min-width: 640px)").matches;
     if (!isDesktop) return;
+    // Без аппаратной видеокарты симуляция «вешает» страницу —
+    // остаётся статичный фон.
+    if (!hasHardwareWebGL()) return;
     const container = document.getElementById("fluid-container");
     if (!container) {
       return;

@@ -21,6 +21,61 @@
   import * as THREE from "three";
   import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
   import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+  import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
+  import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+  import { hasHardwareWebGL } from "../../shared/lib/webgl";
+
+  // Лёгкая версия модели: та же геометрия и текстуры, но без лишних
+  // анимаций (используется только первая). 2.3 МБ вместо 10.8 МБ.
+  const MODEL_URL = "/object/scene-optimized.glb";
+  const MAX_DPR = 1.5;
+
+  /**
+   * На странице два кристалла (прелоадер + главная). Раньше каждый
+   * отдельно скачивал и распаковывал (Draco) модель — теперь загрузка
+   * одна, а инстансы получают клон сцены. Материалы общие, поэтому
+   * их настройка тоже делается один раз здесь.
+   */
+  let gltfPromise: Promise<GLTF> | null = null;
+  function loadCrystalModel(): Promise<GLTF> {
+    if (gltfPromise) return gltfPromise;
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      "https://www.gstatic.com/draco/versioned/decoders/1.5.6/",
+    );
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+    gltfPromise = loader.loadAsync(MODEL_URL).then((gltf) => {
+      const root = gltf.scene ?? gltf.scenes[0];
+      root?.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (!mesh.isMesh || !mesh.material) return;
+        mesh.frustumCulled = false;
+        const materials = Array.isArray(mesh.material)
+          ? mesh.material
+          : [mesh.material];
+        materials.forEach((mat) => {
+          if ("transparent" in mat) mat.transparent = true;
+          if ("depthWrite" in mat) mat.depthWrite = false;
+          // Делаем весь материал матовым и мутным
+          if ("roughness" in mat) (mat as any).roughness = 4;
+          // Эффект подповерхностного размытия/преломления
+          if ("transmission" in mat) (mat as any).transmission = 0.7;
+          if ("thickness" in mat) (mat as any).thickness = 20.0;
+          if ("color" in mat && (mat as any).color) {
+            (mat as any).color.multiplyScalar(0.4);
+            (mat as any).color.add(new THREE.Color(0.15, 0.03, 0.08));
+          }
+          if ("opacity" in mat) {
+            (mat as any).opacity = Math.min((mat as any).opacity * 1.2, 1.0);
+          }
+        });
+      });
+      dracoLoader.dispose();
+      return gltf;
+    });
+    return gltfPromise;
+  }
   /**
    * Внешний "вход" для управления объектом. Любой скрипт на странице
    * (скролл-контроллеры, конкретные секции) может достать инстанс из
@@ -64,11 +119,9 @@
     connectedCallback() {
       if (window.innerWidth < 640) return;
       if (this.initialized) return;
+      // Без аппаратной видеокарты сцена «вешает» страницу — не запускаем.
+      if (!hasHardwareWebGL()) return;
       this.initialized = true;
-      const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath(
-        "https://www.gstatic.com/draco/versioned/decoders/1.5.6/",
-      );
 
       const container = this.querySelector(".three-container");
       if (!container) return;
@@ -81,7 +134,11 @@
         antialias: true,
         powerPreference: "high-performance",
       });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
+      // Материал с transmission рендерит сцену второй раз в отдельный
+      // буфер — считаем его в половине разрешения, на мутном стекле
+      // разницы не видно.
+      (this.renderer as any).transmissionResolutionScale = 0.5;
       this.renderer.setSize(800, 800);
 
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -109,138 +166,47 @@
       blueBackLight.position.set(-5, -3, -5);
       scene.add(blueBackLight);
 
-      const loader = new GLTFLoader();
-      loader.setDRACOLoader(dracoLoader);
-      loader.load(
-        "/object/scene-compressed.glb",
-        (gltf) => {
-          this.model = gltf.scene ?? gltf.scenes[0];
-          if (!this.model) return;
+      loadCrystalModel()
+        .then((gltf) => {
+          if (!this.renderer) return; // элемент уже удалён
+          const source = gltf.scene ?? gltf.scenes[0];
+          if (!source) return;
+          // SkeletonUtils.clone корректно копирует скелет анимированной модели
+          this.model = cloneSkinned(source) as THREE.Group;
 
-          // Возвращаем медузе её нормальные пропорции 1:1:1
           this.model.scale.set(1, 1, 1);
           this.model.position.set(0, -0.5, 0);
 
-          // ИСПРАВЛЕНО: Запуск встроенной профессиональной анимации
+          // Встроенная анимация (цикл плавания)
           if (gltf.animations && gltf.animations.length > 0) {
             this.mixer = new THREE.AnimationMixer(this.model);
-
-            // Берем первую анимацию (обычно это цикл плавания).
-            // Если она покажется не той, можно поменять индекс на 1, 2 и т.д.
-            const animationTrack = gltf.animations[0];
-            const action = this.mixer.clipAction(animationTrack);
-
-            action.play();
+            this.mixer.clipAction(gltf.animations[0]).play();
           }
 
-          let meshIndex = 0;
-
-          this.model.traverse((obj) => {
-            if ((obj as THREE.Mesh).isMesh) {
-              const mesh = obj as THREE.Mesh;
-              mesh.frustumCulled = false;
-
-              // Считаем каждый найденный меш
-              meshIndex++;
-
-              if (mesh.material) {
-                const materials = Array.isArray(mesh.material)
-                  ? mesh.material
-                  : [mesh.material];
-
-                materials.forEach((mat) => {
-                  if ("transparent" in mat) mat.transparent = true;
-
-                  if ("depthWrite" in mat) mat.depthWrite = false;
-
-                  // Делаем весь материал матовым и мутным
-
-                  if ("roughness" in mat) mat.roughness = 4; // Чем выше, тем более мутная поверхность (до 1.0)
-
-                  // if ("metalness" in mat) mat.metalness = 0.0;
-
-                  // Включаем эффект подповерхностного размытия/преломления
-
-                  if ("transmission" in mat) (mat as any).transmission = 0.7;
-
-                  if ("thickness" in mat) (mat as any).thickness = 20.0;
-
-                  // Твоя рабочая настройка цвета и прозрачности
-
-                  if ("color" in mat && (mat as any).color) {
-                    (mat as any).color.multiplyScalar(0.4);
-
-                    const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
-
-                    (mat as any).color.add(pinkTint);
-                  }
-
-                  if ("opacity" in mat) {
-                    (mat as any).opacity = Math.min(
-                      (mat as any).opacity * 1.2,
-
-                      1.0,
-                    );
-                  }
-                });
-
-                //   if ("transparent" in mat) mat.transparent = true;
-                //   if ("depthWrite" in mat) mat.depthWrite = false;
-
-                //   // Обычные настройки для всей медузы
-                //   if ("roughness" in mat) mat.roughness = 0.5;
-
-                //   if ("color" in mat && (mat as any).color) {
-                //     (mat as any).color.multiplyScalar(0.4);
-
-                //     const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
-
-                //     (mat as any).color.add(pinkTint);
-                //   }
-
-                //   // ПРОВЕРКА: Пробуем поймать шапку.
-                //   // Обычно в GLB самый первый (1) или самый тяжелый меш — это купол.
-                //   // Если покрасятся щупальца, просто поменяй 1 на 2, 3 или 4!
-                //   const isCap = meshIndex === 1;
-
-                //   if ("color" in mat && (mat as any).color) {
-                //     if (isCap) {
-                //       if ("roughness" in mat) mat.roughness = 1;
-                //       // КРАСИМ ШАПКУ: делаем её более яркой, насыщенной и розовой
-                //       (mat as any).color.setHex(0xff00aa); // Чистый неоново-розовый цвет
-                //       (mat as any).color.multiplyScalar(0.3); // Приглушаем под твою общую яркость
-                //     } else {
-                //       // КРАСИМ ЩУПАЛЬЦА: твой стандартный рабочий цвет
-                //       (mat as any).color.multiplyScalar(0.4);
-                //       const pinkTint = new THREE.Color(0.15, 0.03, 0.08);
-                //       (mat as any).color.add(pinkTint);
-                //     }
-                //   }
-
-                //   // Для шапки делаем прозрачность плотнее, чтобы она казалась закрашенной
-                //   if ("opacity" in mat) {
-                //     const baseOpacity = isCap ? 0.9 : 0.4; // Шапка почти непрозрачная, щупальца — воздушные
-                //     (mat as any).opacity = baseOpacity;
-                //   }
-                // });
-              }
-            }
-          });
-
           scene.add(this.model);
-          window.dispatchEvent(
-            new CustomEvent("crystal:ready", { detail: { element: this } }),
-          );
-        },
-        undefined,
-        (err) => console.error("GLB Loading Error:", err),
-      );
+          // Компилируем шейдеры заранее и асинхронно, чтобы первый кадр
+          // с моделью не подвешивал страницу.
+          const ready = () =>
+            window.dispatchEvent(
+              new CustomEvent("crystal:ready", { detail: { element: this } }),
+            );
+          (this.renderer as any).compileAsync
+            ? (this.renderer as any)
+                .compileAsync(scene, camera)
+                .then(ready, ready)
+            : ready();
+        })
+        .catch((err) => console.error("GLB Loading Error:", err));
 
       const tick = () => {
         this.rafId = requestAnimationFrame(tick);
 
         const delta = this.clock.getDelta();
         const elapsedTime = this.clock.getElapsedTime();
+
+        // Не рендерим, пока кристалла не видно (прелоадер скрыт,
+        // opacity: 0 до появления и т.п.) — это самый частый случай.
+        if (!this.model || !this.isVisible()) return;
 
         if (this.mixer) {
           this.mixer.update(delta * 1.0);
@@ -255,6 +221,18 @@
         }
       };
       tick();
+    }
+
+    private isVisible() {
+      if (!this.isConnected) return false;
+      const el = this as any;
+      if (typeof el.checkVisibility === "function") {
+        return el.checkVisibility({
+          opacityProperty: true,
+          visibilityProperty: true,
+        });
+      }
+      return this.offsetParent !== null || getComputedStyle(this).position === "fixed";
     }
 
     /**
