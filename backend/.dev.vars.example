@@ -9,3 +9,5 @@ GOOGLE_CLIENT_SECRET=
 COOKIE_DOMAIN=
 COOKIE_SECURE=true
 DATABASE_URL=
+RESEND_API_KEY=
+MAIL_FROM="Pavlo Tishynin <portal@pavlotishynin.com>"

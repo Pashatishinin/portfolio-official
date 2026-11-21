@@ -2,7 +2,7 @@ import { and, asc, desc, eq, ilike, max, or, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { db } from "../db/client";
-import { groups, links, projects } from "../db/schema";
+import { groups, links, projectMembers, projects } from "../db/schema";
 import {
 	idParam,
 	linkInput,
@@ -15,6 +15,9 @@ import { validate as zValidator } from "../validator";
 
 const withLinks = {
 	links: { orderBy: [asc(links.sortOrder), asc(links.createdAt)] },
+	// Light summaries for the dashboard card; the project page loads the full detail.
+	members: { columns: { id: true as const, email: true as const }, orderBy: [asc(projectMembers.createdAt)] },
+	tasks: { columns: { id: true as const, done: true as const } },
 };
 
 async function assertGroup(groupId: string | null | undefined) {

@@ -15,7 +15,7 @@
 	"preview_urls": false,
 
 	// Public, non-secret settings. Secrets (JWT_SECRET, GOOGLE_CLIENT_SECRET,
-	// DATABASE_URL) are set with `wrangler secret put …`, never here.
+	// DATABASE_URL, RESEND_API_KEY) are set with `wrangler secret put …`, never here.
 	// Edit these here, not in the dashboard: `wrangler deploy` overwrites
 	// dashboard changes with this file.
 	"vars": {
@@ -28,6 +28,7 @@
 		"OWNER_EMAILS": "tishyninpavlo@gmail.com",
 		"GOOGLE_CLIENT_ID": "29350352029-qdvv3la4ulb9pn2hmkap70ni8h117peg.apps.googleusercontent.com",
 		"COOKIE_DOMAIN": "",
-		"COOKIE_SECURE": "true"
+		"COOKIE_SECURE": "true",
+		"MAIL_FROM": "Pavlo Tishynin <portal@pavlotishynin.com>"
 	}
 }

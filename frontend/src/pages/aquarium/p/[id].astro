@@ -1,0 +1,60 @@
+---
+import AquariumLayout from "../../../layouts/AquariumLayout.astro";
+import { API_URL, apiGetOrNull } from "../../../shared/aquarium/session";
+import type { ProjectDetail } from "../../../shared/aquarium/types";
+import ProjectPage from "../../../views/aquarium/ProjectPage";
+
+// The middleware has already checked that this is the owner.
+const session = Astro.locals.aquarium;
+if (!session?.user) return Astro.redirect("/aquarium/login");
+const { user, cookie } = session;
+
+const id = Astro.params.id ?? "";
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+let detail: ProjectDetail | null = null;
+let loadError: string | null = null;
+if (UUID.test(id)) {
+	try {
+		detail = await apiGetOrNull<ProjectDetail>(`/api/projects/${id}/detail`, cookie);
+	} catch (error) {
+		console.error("[aquarium] project load failed:", error);
+		loadError = "Couldn’t load this project from the backend. Refresh to try again.";
+	}
+}
+if (!detail && !loadError) Astro.response.status = 404;
+
+const initial = (user.name ?? user.email).trim().charAt(0).toUpperCase();
+---
+
+<AquariumLayout title={detail ? detail.title : "Project"}>
+	<div slot="bar" class="aq-account aq-mono">
+		<a href="/aquarium">Aquarium / Private</a>
+		<span class="aq-account__divider" aria-hidden="true"></span>
+		<span class="aq-account__who">
+			{
+				user.avatarUrl ? (
+					<img class="aq-account__avatar" src={user.avatarUrl} alt="" width="22" height="22" referrerpolicy="no-referrer" />
+				) : (
+					<span class="aq-account__avatar" aria-hidden="true">{initial}</span>
+				)
+			}
+			<span>{user.email}</span>
+		</span>
+	</div>
+
+	{
+		detail ? (
+			<ProjectPage client:load apiUrl={API_URL} initial={detail} siteUrl={Astro.url.origin} />
+		) : (
+			<section class="aq-login">
+				<h1 class="aq-login__title">
+					<span class="aq-italic">{loadError ? "something went" : "no such"}</span>
+					<span class="aq-display">{loadError ? "Wrong" : "Project"}</span>
+				</h1>
+				<p class="aq-login__sub">{loadError ?? "It may have been deleted."}</p>
+				<a class="aq-btn" href="/aquarium">← All projects</a>
+			</section>
+		)
+	}
+</AquariumLayout>

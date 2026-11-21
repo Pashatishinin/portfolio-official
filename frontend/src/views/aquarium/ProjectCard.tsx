@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { detectService, displayUrl, normalizeUrl } from "../../shared/aquarium/services";
 import type { Group, Project, ProjectStatus } from "../../shared/aquarium/types";
 import type { AquariumApi } from "./api";
+import { IconEye } from "./icons";
 import {
 	Favicon,
 	IconArrow,
@@ -40,6 +41,9 @@ export default function ProjectCard({ project, groups, api, onChange, onDelete, 
 	}, [mode, adding]);
 
 	const fail = (err: unknown, fallback: string) => onError(err instanceof Error ? err.message : fallback);
+	const clients = project.members?.length ?? 0;
+	const sharedLinks = project.links.filter((l) => l.visibility === "client").length;
+	const openTasks = project.tasks?.filter((t) => !t.done).length ?? 0;
 
 	async function removeLink(linkId: string, label: string) {
 		if (!window.confirm(`Remove “${label}” from ${project.title}?`)) return;
@@ -88,13 +92,20 @@ export default function ProjectCard({ project, groups, api, onChange, onDelete, 
 					<StatusDot status={project.status} />
 					{STATUS_META[project.status].label}
 				</span>
-				<span>
-					Created <time dateTime={project.createdAt}>{formatDate(project.createdAt)}</time>
-				</span>
+				{clients > 0 ? (
+					<span className="aq-card__share aq-card__share--on" title={project.members.map((m) => m.email).join(", ")}>
+						<IconEye size={12} />
+						{clients} {clients === 1 ? "client" : "clients"}
+					</span>
+				) : (
+					<span>
+						Created <time dateTime={project.createdAt}>{formatDate(project.createdAt)}</time>
+					</span>
+				)}
 			</div>
 
 			<h3 className="aq-card__title aq-display" id={`${id}-t`}>
-				{project.title}
+				<a href={`/aquarium/p/${project.id}`}>{project.title}</a>
 			</h3>
 			{project.description && <p className="aq-card__note">{project.description}</p>}
 
@@ -145,7 +156,17 @@ export default function ProjectCard({ project, groups, api, onChange, onDelete, 
 						+ Link
 					</button>
 				)}
+				{(openTasks > 0 || sharedLinks > 0) && (
+					<span className="aq-mono aq-mono--sm aq-muted">
+						{sharedLinks > 0 && `${sharedLinks} shared`}
+						{sharedLinks > 0 && openTasks > 0 && " · "}
+						{openTasks > 0 && `${openTasks} open ${openTasks === 1 ? "task" : "tasks"}`}
+					</span>
+				)}
 				<div className="aq-card__tools">
+					<a className="aq-link-btn aq-mono aq-mono--sm aq-card__open" href={`/aquarium/p/${project.id}`} style={{ display: "inline-flex", alignItems: "center", marginRight: 8 }}>
+						Open →
+					</a>
 					<button
 						ref={editButtonRef}
 						type="button"

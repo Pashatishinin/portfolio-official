@@ -1,0 +1,85 @@
+---
+import AquariumLayout from "../../layouts/AquariumLayout.astro";
+import { apiGet } from "../../shared/aquarium/session";
+import { timeAgo } from "../../shared/aquarium/time";
+import type { PortalProjectSummary } from "../../shared/aquarium/types";
+import { STATUS_META } from "../../views/aquarium/ui";
+import PortalBar from "../../views/portal/PortalBar.astro";
+
+const session = Astro.locals.aquarium;
+if (!session?.user) return Astro.redirect("/portal/login");
+const { user, cookie } = session;
+
+let items: PortalProjectSummary[] = [];
+let loadError = false;
+try {
+	items = (await apiGet<{ items: PortalProjectSummary[] }>("/api/portal/projects", cookie)).items;
+} catch (error) {
+	console.error("[portal] list failed:", error);
+	loadError = true;
+}
+
+// One project → no list needed, open it straight away.
+if (!loadError && user.role === "client" && items.length === 1) {
+	return Astro.redirect(`/portal/p/${items[0]!.id}`);
+}
+
+const name = user.email.split("@")[0];
+---
+
+<AquariumLayout title="Your projects">
+	<PortalBar slot="bar" user={user} />
+
+	<section class="aq-hero">
+		<h1 class="aq-hero__title">
+			<span class="aq-italic">{user.role === "owner" ? "preview — every project" : `hello, ${name} — your`}</span>
+			<span class="aq-display">Projects</span>
+		</h1>
+	</section>
+
+	{loadError && <div class="aq-error" role="alert">Couldn’t load your projects. Refresh to try again.</div>}
+
+	{
+		!loadError && items.length === 0 && (
+			<div class="aq-empty" style="margin-top: 56px">
+				<span class="aq-empty__title aq-italic">nothing here yet</span>
+				<p class="aq-empty__text">
+					This email doesn’t have access to any project right now. If that’s unexpected, ask Pavlo to check the
+					invite.
+				</p>
+			</div>
+		)
+	}
+
+	{
+		items.length > 0 && (
+			<div class="aq-grid" style="margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--ink)">
+				{items.map((p) => (
+					<a class="aq-card" href={`/portal/p/${p.id}`} style="padding-bottom: 18px">
+						<div class="aq-card__meta aq-mono aq-mono--sm">
+							<span class="aq-card__status">
+								<span class={`aq-dot aq-dot--${p.status}`} aria-hidden="true" />
+								{STATUS_META[p.status].label}
+							</span>
+							<span>Updated {timeAgo(p.updatedAt)}</span>
+						</div>
+						<h2 class="aq-card__title aq-display">{p.title}</h2>
+						{p.clientSummary && <p class="aq-card__note">{p.clientSummary}</p>}
+						<div class="aq-card__foot aq-mono aq-mono--sm" style="margin-top: 24px; border-top: 1px solid var(--hair); padding-top: 12px">
+							<span>
+								{p.linkCount} {p.linkCount === 1 ? "link" : "links"}
+								{p.taskCount > 0 && ` · ${p.openTaskCount} open ${p.openTaskCount === 1 ? "task" : "tasks"}`}
+							</span>
+							<span>Open →</span>
+						</div>
+					</a>
+				))}
+			</div>
+		)
+	}
+
+	<footer class="aq-foot aq-mono aq-mono--sm">
+		<span>Pavlo Tishynin — client portal</span>
+		<span>Private · noindex</span>
+	</footer>
+</AquariumLayout>

@@ -1,0 +1,40 @@
+---
+import { API_URL } from "../../shared/aquarium/session";
+import type { AquariumUser } from "../../shared/aquarium/types";
+
+interface Props {
+	user: AquariumUser;
+}
+
+const { user } = Astro.props;
+const isOwner = user.role === "owner";
+---
+
+<div class="aq-account aq-mono">
+	{isOwner ? <a href="/aquarium">← Aquarium</a> : <span>Client portal</span>}
+	<span class="aq-account__divider" aria-hidden="true"></span>
+	<span class="aq-account__who">
+		<span class="aq-ava aq-ava--client aq-ava--sm" aria-hidden="true">{user.email.charAt(0)}</span>
+		<span>{user.email}</span>
+	</span>
+	{
+		!isOwner && (
+			<button type="button" class="aq-link-btn aq-mono" id="portal-signout" data-api={API_URL}>
+				Sign out
+			</button>
+		)
+	}
+</div>
+
+<script>
+	const button = document.getElementById("portal-signout") as HTMLButtonElement | null;
+	button?.addEventListener("click", async () => {
+		button.disabled = true;
+		try {
+			await fetch(`${button.dataset.api}/api/auth/logout`, { method: "POST", credentials: "include" });
+		} finally {
+			// On a project link this shows the email form again; elsewhere the middleware takes over.
+			window.location.reload();
+		}
+	});
+</script>

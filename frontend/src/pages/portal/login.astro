@@ -1,0 +1,31 @@
+---
+import AquariumLayout from "../../layouts/AquariumLayout.astro";
+
+// Clients get in through the project link Pavlo sends them (/portal/p/<id>),
+// where they type their email. This page is only where everyone else lands.
+const unavailable = Astro.url.searchParams.get("error") === "unavailable";
+---
+
+<AquariumLayout title="Aquarium">
+	<span slot="bar" class="aq-mono aq-muted">Client portal</span>
+
+	<section class="aq-login" aria-labelledby="login-title">
+		<h1 class="aq-login__title" id="login-title">
+			<span class="aq-italic">welcome to the</span>
+			<span class="aq-display">Aquarium</span>
+		</h1>
+		{unavailable && <p class="aq-login__alert" role="alert">The portal isn’t answering right now. Try again in a moment.</p>}
+		<p class="aq-login__sub">
+			Open the project link Pavlo sent you and enter your email there. Lost the link? Just ask him for it again.
+		</p>
+		<p class="aq-login__aside">
+			<span class="star" aria-hidden="true">*</span>
+			<span class="aq-italic">every project has its own private link</span>
+		</p>
+	</section>
+
+	<footer class="aq-login__foot aq-mono aq-mono--sm">
+		<a href="/">← pavlotishynin.com</a>
+		<span>Private · noindex</span>
+	</footer>
+</AquariumLayout>

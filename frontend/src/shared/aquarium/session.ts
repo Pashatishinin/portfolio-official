@@ -99,3 +99,11 @@ export async function apiGet<T>(path: string, cookie: string): Promise<T> {
 	if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
 	return (await res.json()) as T;
 }
+
+/** Like apiGet, but a 404 (unknown project, or not invited) comes back as null. */
+export async function apiGetOrNull<T>(path: string, cookie: string): Promise<T | null> {
+	const res = await fetch(`${INTERNAL_API_URL}${path}`, { headers: { cookie }, cache: "no-store" });
+	if (res.status === 404) return null;
+	if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
+	return (await res.json()) as T;
+}

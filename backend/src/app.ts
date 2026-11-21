@@ -5,20 +5,28 @@ import { csrf } from "hono/csrf";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
-import { auth, isOwner, type AuthUser } from "./auth";
+import { auth, roleOf, type AuthUser } from "./auth";
 import { env } from "./env";
+import { commentRoutes, memberRoutes, noteRoutes, projectCollabRoutes, taskRoutes } from "./routes/collab";
 import { groupRoutes } from "./routes/groups";
+import { portalRoutes } from "./routes/portal";
+import { portalAuthRoutes } from "./routes/portalAuth";
 import { linkRoutes, projectRoutes } from "./routes/projects";
 
 const api = new Hono()
 	// Public
 	.get("/health", (c) => c.json({ ok: true }))
 	.route("/auth", auth.routes)
+	// Client sign-in by emailed code (public) — registered before the portal
+	// routes so their session middleware never runs for these two endpoints.
+	.route("/portal/auth", portalAuthRoutes)
 	.get("/me", async (c) => {
 		const user = await auth.getSession(c);
-		if (!user || !isOwner(user.email)) return c.json({ error: "unauthorized" }, 401);
-		return c.json({ email: user.email, name: user.name, avatarUrl: user.avatarUrl });
-	});
+		if (!user) return c.json({ error: "unauthorized" }, 401);
+		return c.json({ email: user.email, name: user.name, avatarUrl: user.avatarUrl, role: roleOf(user) });
+	})
+	// Client portal: any signed-in user; access is checked per project inside.
+	.route("/portal", portalRoutes);
 
 // Everything registered after this point requires a valid owner session.
 const protectedApi = new Hono<{ Variables: { authUser: AuthUser } }>()
@@ -26,12 +34,17 @@ const protectedApi = new Hono<{ Variables: { authUser: AuthUser } }>()
 	.use(async (c, next) => {
 		// Re-check on every request so removing an email from OWNER_EMAILS
 		// locks it out immediately, without waiting for tokens to expire.
-		if (!isOwner(c.get("authUser").email)) return c.json({ error: "forbidden" }, 403);
+		if (roleOf(c.get("authUser")) !== "owner") return c.json({ error: "forbidden" }, 403);
 		await next();
 	})
 	.route("/groups", groupRoutes)
 	.route("/projects", projectRoutes)
-	.route("/links", linkRoutes);
+	.route("/projects", projectCollabRoutes)
+	.route("/links", linkRoutes)
+	.route("/members", memberRoutes)
+	.route("/tasks", taskRoutes)
+	.route("/comments", commentRoutes)
+	.route("/notes", noteRoutes);
 
 export const app = new Hono()
 	.use(logger())

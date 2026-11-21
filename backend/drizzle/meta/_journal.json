@@ -15,6 +15,20 @@
       "when": 1791142555246,
       "tag": "0001_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795254120139,
+      "tag": "0002_portal",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795255812987,
+      "tag": "0003_drop_login_codes",
+      "breakpoints": true
     }
   ]
 }

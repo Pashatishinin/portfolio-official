@@ -35,6 +35,14 @@ const schema = z.object({
 	COOKIE_DOMAIN: z.string().optional(),
 	COOKIE_SECURE: bool,
 
+	/**
+	 * Optional Resend API key: emails you when a client writes in the portal.
+	 * Without it nothing is sent (the message is only logged).
+	 */
+	RESEND_API_KEY: z.string().optional(),
+	/** Sender of portal emails; the domain must be verified in Resend. */
+	MAIL_FROM: z.string().default("Pavlo Tishynin <portal@pavlotishynin.com>"),
+
 	/** Neon connection string: postgresql://user:pass@ep-xxx.region.aws.neon.tech/db?sslmode=require */
 	DATABASE_URL: z.string().regex(/^postgres(ql)?:\/\//, "DATABASE_URL must be a postgres:// connection string"),
 });
@@ -57,4 +65,5 @@ export const env = {
 	API_URL: stripSlash(parsed.data.API_URL),
 	FRONTEND_URL: stripSlash(parsed.data.FRONTEND_URL),
 	COOKIE_DOMAIN: parsed.data.COOKIE_DOMAIN || undefined,
+	RESEND_API_KEY: parsed.data.RESEND_API_KEY || undefined,
 };

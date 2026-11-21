@@ -1,0 +1,76 @@
+---
+import AquariumLayout from "../../../layouts/AquariumLayout.astro";
+import { API_URL, apiGetOrNull } from "../../../shared/aquarium/session";
+import type { PortalProject } from "../../../shared/aquarium/types";
+import ClientProject from "../../../views/portal/ClientProject";
+import PortalBar from "../../../views/portal/PortalBar.astro";
+import PortalGate from "../../../views/portal/PortalGate";
+
+// Anyone may open this URL: without a session (or with an email that isn't
+// on this project) they get the email form instead of the project.
+const session = Astro.locals.aquarium;
+const user = session?.user ?? null;
+const cookie = session?.cookie ?? "";
+
+const id = Astro.params.id ?? "";
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const validId = UUID.test(id);
+
+// The API answers 404 both for unknown projects and for ones this email
+// isn't invited to, so the two can't be told apart.
+let project: PortalProject | null = null;
+let loadError = false;
+if (user && validId) {
+	try {
+		project = await apiGetOrNull<PortalProject>(`/api/portal/projects/${id}`, cookie);
+	} catch (error) {
+		console.error("[portal] project load failed:", error);
+		loadError = true;
+	}
+}
+
+const showGate = validId && !loadError && !project && user?.role !== "owner";
+if (!validId || (user?.role === "owner" && !project && !loadError)) Astro.response.status = 404;
+const preview = user?.role === "owner";
+---
+
+<AquariumLayout title={project ? project.title : "Aquarium"}>
+	{user ? <PortalBar slot="bar" user={user} /> : <span slot="bar" class="aq-mono aq-muted">Client portal</span>}
+
+	{
+		preview && project && (
+			<div class="aq-preview-bar aq-mono" style="margin-top: 32px">
+				<span>Preview — this is what invited clients see</span>
+				<a href={`/aquarium/p/${project.id}`}>← Back to editing</a>
+			</div>
+		)
+	}
+
+	{
+		project ? (
+			<>
+				<nav class="aq-crumbs aq-mono" aria-label="Breadcrumb">
+					<a href="/portal">← Your projects</a>
+				</nav>
+				<ClientProject client:load apiUrl={API_URL} initial={project} />
+			</>
+		) : showGate ? (
+			<PortalGate client:load apiUrl={API_URL} projectId={id} wrongEmail={user ? user.email : null} />
+		) : (
+			<section class="aq-login">
+				<h1 class="aq-login__title">
+					<span class="aq-italic">{loadError ? "something went" : "nothing to see"}</span>
+					<span class="aq-display">{loadError ? "Wrong" : "Here"}</span>
+				</h1>
+				<p class="aq-login__sub">
+					{loadError ? "Couldn’t load the project. Refresh to try again." : "This link doesn’t lead to a project."}
+				</p>
+			</section>
+		)
+	}
+
+	<footer class="aq-foot aq-mono aq-mono--sm">
+		<span>Pavlo Tishynin — client portal</span>
+		<span>Private · noindex</span>
+	</footer>
+</AquariumLayout>
