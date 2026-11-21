@@ -830,32 +830,114 @@ function NotesSection({ detail, api, update, fail }: SectionProps) {
 
 			<ul className="aq-notes">
 				{visible.map((note) => (
-					<li key={note.id} className={`aq-note${note.visibility === "internal" ? " aq-note--private" : ""}`}>
-						<Avatar label={note.authorRole === "owner" ? "P" : note.authorEmail} client={note.authorRole === "client"} />
-						<div className="aq-note__main">
-							<div className="aq-note__head">
-								<span className="aq-note__author">{note.authorRole === "owner" ? "You" : note.authorEmail}</span>
-								<span className="aq-mono aq-mono--sm aq-muted" suppressHydrationWarning>
-									{formatWhen(note.createdAt)}
-								</span>
-								{note.visibility === "internal" && (
-									<span className="aq-badge aq-mono aq-mono--sm">
-										<IconLock size={11} />
-										Only you
-									</span>
-								)}
-								<span className="aq-note__tools">
-									<button type="button" className="aq-link-btn aq-link-btn--danger aq-mono aq-mono--sm" onClick={() => remove(note)}>
-										Delete
-									</button>
-								</span>
-							</div>
-							<p className="aq-note__body"><Linkify text={note.body} /></p>
-						</div>
-					</li>
+					<OwnerNote
+						key={note.id}
+						note={note}
+						onRemove={() => remove(note)}
+						onSave={async (patch) => {
+							try {
+								const updated = await api.updateNote(note.id, patch);
+								update((d) => ({ ...d, notes: d.notes.map((n) => (n.id === updated.id ? updated : n)) }));
+								return true;
+							} catch (err) {
+								fail(err, "Couldn’t save the note.");
+								return false;
+							}
+						}}
+					/>
 				))}
 			</ul>
 		</section>
+	);
+}
+
+function OwnerNote(props: {
+	note: Note;
+	onRemove: () => void;
+	onSave: (patch: { body: string; visibility: Visibility }) => Promise<boolean>;
+}) {
+	const { note } = props;
+	const [editing, setEditing] = useState(false);
+	const [draft, setDraft] = useState(note.body);
+	const [visibility, setVisibility] = useState<Visibility>(note.visibility);
+	const [saving, setSaving] = useState(false);
+	const isClient = note.authorRole === "client";
+
+	async function save(event: FormEvent) {
+		event.preventDefault();
+		if (!draft.trim()) return;
+		setSaving(true);
+		if (await props.onSave({ body: draft.trim(), visibility })) setEditing(false);
+		setSaving(false);
+	}
+
+	return (
+		<li className={`aq-note${note.visibility === "internal" ? " aq-note--private" : ""}`}>
+			<Avatar label={isClient ? note.authorEmail : "P"} client={isClient} />
+			<div className="aq-note__main">
+				<div className="aq-note__head">
+					<span className="aq-note__author">{isClient ? note.authorEmail : "You"}</span>
+					<span className="aq-mono aq-mono--sm aq-muted" suppressHydrationWarning>
+						{formatWhen(note.createdAt)}
+						{note.updatedAt !== note.createdAt && " · edited"}
+					</span>
+					{note.visibility === "internal" && (
+						<span className="aq-badge aq-mono aq-mono--sm">
+							<IconLock size={11} />
+							Only you
+						</span>
+					)}
+					{!editing && (
+						<span className="aq-note__tools">
+							{/* A client's words stay theirs: the owner can hide or delete them, not rewrite them. */}
+							{!isClient && (
+								<button
+									type="button"
+									className="aq-link-btn aq-mono aq-mono--sm"
+									onClick={() => {
+										setDraft(note.body);
+										setVisibility(note.visibility);
+										setEditing(true);
+									}}
+								>
+									Edit
+								</button>
+							)}
+							<button type="button" className="aq-link-btn aq-link-btn--danger aq-mono aq-mono--sm" onClick={props.onRemove}>
+								Delete
+							</button>
+						</span>
+					)}
+				</div>
+				{editing ? (
+					<form onSubmit={save} onKeyDown={(e) => e.key === "Escape" && setEditing(false)} style={{ marginTop: 10 }}>
+						<textarea
+							className="aq-input"
+							rows={Math.min(10, Math.max(3, draft.split("\n").length + 1))}
+							value={draft}
+							onChange={(e) => setDraft(e.target.value)}
+							aria-label="Edit note"
+							maxLength={5000}
+							autoFocus
+						/>
+						<div className="aq-composer__foot">
+							<VisibilityToggle value={visibility} onChange={setVisibility} />
+							<span className="aq-sec__spacer" />
+							<button type="button" className="aq-link-btn aq-mono aq-mono--sm" onClick={() => setEditing(false)}>
+								Cancel
+							</button>
+							<button type="submit" className="aq-btn aq-btn--solid aq-btn--sm" disabled={saving || !draft.trim()}>
+								{saving ? "Saving…" : "Save"}
+							</button>
+						</div>
+					</form>
+				) : (
+					<p className="aq-note__body">
+						<Linkify text={note.body} />
+					</p>
+				)}
+			</div>
+		</li>
 	);
 }
 
